@@ -6,6 +6,19 @@
 A crypto-funded, **spend-bounded** API payment rail for autonomous agents, built on
 [Casper](https://casper.network) x402 micropayments.
 
+## Live on Casper testnet
+
+An agent paid for a real Deepgram TTS call by settling in our own CEP-18 token on Casper testnet:
+
+| Artifact | Hash |
+|---|---|
+| Token (Casper X402 Token) | [`680e9ca4…0e91df6`](https://testnet.cspr.live/contract-package/680e9ca4a5f46ffeaf35f346defca6c2f98bfff23b05cb79ea75965340e91df6) |
+| Token deploy tx | [`a4219a47…ec0dad4`](https://testnet.cspr.live/transaction/a4219a475add8570cd0192eafc49df662cbca184632db9050498ab2d3ec0dad4) |
+| x402 settlement tx | [`8971289990…1bb255c`](https://testnet.cspr.live/transaction/8971289990c8bcf515516bb8fc65e22e1deab3cf4c56a98c10cccf1521bb255c) |
+
+The agent signed an x402 authorization, the facilitator settled it on-chain, and the rail
+returned real spoken audio — paid per call, capped by an on-chain balance.
+
 Agents hold a crypto budget but the world's APIs run on cards. This rail lets an
 agent pay for a real API **per request** from an on-chain balance — and enforces a
 hard spending cap the agent physically cannot exceed.

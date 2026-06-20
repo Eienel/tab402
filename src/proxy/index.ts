@@ -122,6 +122,28 @@ if (cfg.devBypass) {
   );
 }
 
+// Call Deepgram with retries — this network is flaky and Node's hard 10s
+// connect timeout can turn a slow connect into a failure. Retry punches through.
+async function deepgramSpeak(text: string, attempts = 5): Promise<Response> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fetch(`https://api.deepgram.com/v1/speak?model=${cfg.deepgramModel}`, {
+        method: "POST",
+        headers: { Authorization: `Token ${cfg.deepgramApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(30000),
+      });
+    } catch (e) {
+      lastErr = e;
+      const code = (e as { cause?: { code?: string } })?.cause?.code || (e as Error)?.message;
+      console.warn(`  deepgram attempt ${i + 1}/${attempts} failed (${code}) — retrying`);
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+  throw lastErr;
+}
+
 // Protected: only runs after payment has settled on-chain.
 app.post("/v1/speak", async (req, res) => {
   const text = (req.body?.text as string) || "";
@@ -129,14 +151,7 @@ app.post("/v1/speak", async (req, res) => {
     return res.status(400).json({ error: "Body must include non-empty 'text'." });
   }
   try {
-    const dgRes = await fetch(`https://api.deepgram.com/v1/speak?model=${cfg.deepgramModel}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Token ${cfg.deepgramApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
+    const dgRes = await deepgramSpeak(text);
     if (!dgRes.ok) {
       const detail = await dgRes.text();
       console.error("Deepgram error", dgRes.status, detail);
