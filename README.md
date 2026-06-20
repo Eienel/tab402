@@ -1,4 +1,7 @@
-# Casper Agent Rail
+# Tab
+
+> Your agent's running tab, on-chain. Open a Tab, fund it once, and your agent pays
+> per call over x402 — capped by a balance it can't exceed.
 
 A crypto-funded, **spend-bounded** API payment rail for autonomous agents, built on
 [Casper](https://casper.network) x402 micropayments.
