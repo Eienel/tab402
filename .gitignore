@@ -8,3 +8,4 @@ out.*.mp3
 .DS_Store
 assets/*.wasm
 out/
+data/ledger.jsonl

@@ -16,6 +16,7 @@ import dotenv from "dotenv";
 import express from "express";
 
 import { NetworkKey, parseEnv } from "./config.js";
+import { recordSettlement } from "../lib/ledger.js";
 
 dotenv.config();
 
@@ -27,7 +28,21 @@ app.use(express.json());
 const facilitator = new x402Facilitator()
   .onAfterVerify(async () => console.log("✅ payment verified"))
   .onVerifyFailure(async ctx => console.log("❌ verify failure", ctx))
-  .onAfterSettle(async ctx => console.log("💸 settled on-chain", ctx))
+  .onAfterSettle(async (ctx: unknown) => {
+    const c = ctx as { result?: { success?: boolean; payer?: string; transaction?: string; network?: string }; requirements?: { amount?: string; asset?: string } };
+    const r = c?.result;
+    if (r?.success && r?.transaction) {
+      recordSettlement({
+        payer: r.payer ?? "",
+        transaction: r.transaction,
+        amount: c?.requirements?.amount ?? "0",
+        asset: c?.requirements?.asset ?? "",
+        network: r.network ?? "casper:casper-test",
+        ts: new Date().toISOString(),
+      });
+      console.log(`💸 settled on-chain ${r.transaction}`);
+    }
+  })
   .onSettleFailure(async ctx => console.log("❌ settle failure", ctx));
 
 async function buildSigner(key: NetworkKey): Promise<FacilitatorCasperSigner> {
