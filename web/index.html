@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Casper Agent Rail — spend-bounded API payments for autonomous agents</title>
+<style>
+  :root{
+    --bg:#0a0a0b; --panel:#121214; --panel2:#16161a; --line:#26262c;
+    --text:#ECECEE; --muted:#9a9aa3; --accent:#ff3b30; --accent2:#ff6a4d;
+    --good:#36d399; --warn:#ffb020;
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent2);text-decoration:none}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em}
+  .dot{width:12px;height:12px;border-radius:3px;background:var(--accent);
+    box-shadow:0 0 16px var(--accent)}
+  .pill{font-size:12px;color:var(--muted);border:1px solid var(--line);
+    padding:5px 10px;border-radius:999px}
+  /* hero */
+  .hero{padding:64px 0 40px}
+  .tag{color:var(--accent2);font-family:var(--mono);font-size:13px;letter-spacing:.04em}
+  h1{font-size:54px;line-height:1.05;letter-spacing:-.03em;margin:14px 0 18px;font-weight:760}
+  h1 .grad{background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:19px;color:var(--muted);max-width:680px}
+  .cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+  .btn{padding:12px 18px;border-radius:10px;font-weight:600;font-size:15px;
+    border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* sections */
+  section{padding:46px 0;border-top:1px solid var(--line)}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+    font-weight:600;margin:0 0 22px}
+  .lead{font-size:24px;letter-spacing:-.02em;max-width:760px;margin:0 0 8px}
+  .grid{display:grid;gap:16px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{margin:0 0 8px;font-size:16px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .k{font-family:var(--mono);color:var(--accent2)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+  .step{flex:1;min-width:150px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:12px;padding:16px}
+  .step .n{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .step h4{margin:6px 0 6px;font-size:15px}
+  .step p{margin:0;font-size:13px;color:var(--muted)}
+  /* demo */
+  .demo{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .meter{height:14px;background:#000;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .meter > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--good),#2bbf9e);transition:width .5s ease}
+  .ledger{font-family:var(--mono);font-size:13px;margin-top:18px;min-height:170px}
+  .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .row .left{color:var(--text)}
+  .row .cost{color:var(--accent2)}
+  .silent{color:var(--warn);font-weight:600;margin-top:12px}
+  .muted{color:var(--muted)}
+  footer{padding:40px 0;color:var(--muted);font-size:13px}
+  @media(max-width:760px){.cols-2,.cols-3{grid-template-columns:1fr}h1{font-size:38px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav">
+    <div class="brand"><span class="dot"></span> Casper Agent Rail</div>
+    <span class="pill">Casper Agentic Buildathon 2026</span>
+  </div>
+
+  <header class="hero">
+    <div class="tag">x402 · Casper · agent-native payments</div>
+    <h1>Give your agent <span class="grad">a budget it can't blow.</span></h1>
+    <p class="sub">Autonomous agents hold crypto but the world's APIs run on cards.
+      Casper Agent Rail lets an agent pay for real APIs <b>per request</b> from an
+      on-chain balance — with a hard spending cap it <i>physically cannot exceed.</i></p>
+    <div class="cta">
+      <button class="btn primary" onclick="runDemo()">▶ Watch the agent spend</button>
+      <a class="btn" href="https://github.com/" target="_blank">View on GitHub</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>The gap</h2>
+    <p class="lead">x402 lets agents pay crypto-native services. It does nothing for the
+      99% of APIs that only take a card — and nothing to stop an agent from draining
+      your account overnight.</p>
+    <div class="grid cols-3" style="margin-top:22px">
+      <div class="card"><h3>Agents can't hold a Visa</h3><p>A non-human economic actor has a wallet, not a credit card. The fiat world won't onboard it.</p></div>
+      <div class="card"><h3>No spend ceiling</h3><p>Hand an agent an API key and it can burn $10k while you sleep. Nobody ships that to production.</p></div>
+      <div class="card"><h3>No verifiable metering</h3><p>You trust the provider's invoice. There's no on-chain proof you were charged for exactly what you used.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="flow">
+      <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>Points at our endpoint instead of the provider, holding a Casper key + token budget.</p></div>
+      <div class="step"><div class="n">02</div><h4>402 + price</h4><p>The rail answers <span class="k">402 Payment Required</span> with a per-call price in our CEP-18 token.</p></div>
+      <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper. Instant finality (Zug).</p></div>
+      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API (Deepgram) and returns the result — with an on-chain receipt.</p></div>
+    </div>
+    <div class="grid cols-2" style="margin-top:16px">
+      <div class="card"><h3>The moat: spend-bounded access</h3><p>The agent's on-chain token balance <i>is</i> its cap. Run it dry and the next call simply can't settle. Overspend is impossible, not just discouraged.</p></div>
+      <div class="card"><h3>Why Casper</h3><p>Zug's deterministic instant finality makes per-call on-chain settlement viable — impossible on probabilistic chains. Every API call is one real transaction.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Live demo — a voice agent on a budget</h2>
+    <p class="muted" style="margin-bottom:18px">Claude writes a script. The agent pays per line and goes
+      <b style="color:var(--warn)">silent</b> the instant its budget runs out.</p>
+    <div class="demo">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-family:var(--mono);font-size:13px">
+        <span>budget</span><span id="bal">0.35 X402</span>
+      </div>
+      <div class="meter"><i id="bar"></i></div>
+      <div class="ledger" id="ledger"><span class="muted">Press “Watch the agent spend”.</span></div>
+    </div>
+  </section>
+
+  <footer>
+    Built for the Casper Agentic Buildathon 2026 · x402 · Deepgram · Odra<br/>
+    Spend-bounded API payments for the agent economy.
+  </footer>
+</div>
+
+<script>
+  const SCRIPT = [
+    "I am an autonomous agent, and I hold my own money on Casper.",
+    "Every sentence I speak, I pay for myself, per request.",
+    "My budget is enforced on-chain. I literally cannot overspend.",
+    "When my balance runs out, I stop. No surprise bills, ever.",
+    "This is what machine-native payments look like."
+  ];
+  const COST = 0.10, START = 0.35;
+  let running = false;
+  function runDemo(){
+    if(running) return; running = true;
+    let remaining = START;
+    const ledger = document.getElementById('ledger');
+    const bar = document.getElementById('bar');
+    const bal = document.getElementById('bal');
+    ledger.innerHTML = ''; bar.style.width='100%'; bal.textContent = START.toFixed(2)+' X402';
+    let i = 0;
+    const tick = ()=>{
+      if(i >= SCRIPT.length){ running=false; return; }
+      if(remaining < COST){
+        const d=document.createElement('div'); d.className='silent';
+        d.textContent='🛑 Budget exhausted — agent goes SILENT. '+(SCRIPT.length-i)+' line(s) unspoken.';
+        ledger.appendChild(d); running=false; return;
+      }
+      remaining = +(remaining - COST).toFixed(2);
+      const row=document.createElement('div'); row.className='row';
+      row.innerHTML='<span class="left">🔊 #'+(i+1)+' &nbsp;"'+SCRIPT[i]+'"</span>'+
+        '<span class="cost">-'+COST.toFixed(2)+'</span>';
+      ledger.appendChild(row);
+      bar.style.width = (remaining/START*100)+'%';
+      bal.textContent = remaining.toFixed(2)+' X402';
+      i++; setTimeout(tick, 900);
+    };
+    setTimeout(tick, 300);
+  }
+</script>
+</body>
+</html>
