@@ -38,8 +38,9 @@
   .stat .k{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
   .stat .v{font-family:var(--mono);font-size:22px;margin-top:6px}
   .grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:20px;align-items:start}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 20px 44px -26px rgba(0,0,0,.55)}
   .card h2{font-size:15px;margin:0 0 14px;font-weight:600}
+  .card h2::before{content:"\2605";color:var(--brass);margin-right:8px;font-size:10px;vertical-align:1px}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:9px;font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:transform .15s var(--ease),filter .2s}
   .btn:hover{filter:brightness(1.07)} .btn:active{transform:translateY(1px) scale(.99)}
   .btn.ghost{background:var(--panel2);border-color:var(--line);color:var(--text)}
