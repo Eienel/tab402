@@ -8,11 +8,13 @@
     "facilitator": "tsx src/facilitator/index.ts",
     "proxy": "tsx src/proxy/index.ts",
     "agent": "tsx src/agent/index.ts",
+    "voice-agent": "tsx src/agent/voice-agent.ts",
     "keygen": "tsx src/tools/keygen.ts",
     "deploy-token": "tsx src/tools/deploy-token.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
     "@make-software/casper-x402": "1.0.0",
     "@x402/core": "2.15.0",
     "@x402/express": "2.15.0",

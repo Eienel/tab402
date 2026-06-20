@@ -25,16 +25,21 @@ interface Env {
   priceMotes: string;
   deepgramApiKey: string;
   deepgramModel: string;
+  devBypass: boolean;
 }
 
 function parseEnv(): Env {
+  // DEV-ONLY: skip the x402 paywall to test the Deepgram + agent loop without
+  // a funded chain. Never enable in the real demo — it removes the on-chain part.
+  const devBypass = process.env.DEV_BYPASS_PAYMENT === "true";
   const required = (key: string): string => {
     const v = process.env[key];
     if (!v) {
+      if (devBypass) return "dev-bypass";
       console.error(`❌ ${key} environment variable is required`);
       process.exit(1);
     }
-    return v;
+    return v as string;
   };
   return {
     port: parseInt(process.env.PROXY_PORT || "4021", 10),
@@ -48,6 +53,7 @@ function parseEnv(): Env {
     priceMotes: process.env.PRICE_MOTES || "100000000",
     deepgramApiKey: required("DEEPGRAM_API_KEY"),
     deepgramModel: process.env.DEEPGRAM_TTS_MODEL || "aura-2-thalia-en",
+    devBypass,
   };
 }
 
@@ -92,25 +98,29 @@ app.use(
 );
 app.use(express.json());
 
-app.use(
-  paymentMiddleware(
-    {
-      "POST /v1/speak": {
-        accepts: [
-          {
-            scheme: "exact",
-            price: "$0.001",
-            network: chainID,
-            payTo: cfg.payeeAddress,
-          },
-        ],
-        description: "Text-to-speech via Deepgram, paid per call over x402",
-        mimeType: "audio/mpeg",
+if (cfg.devBypass) {
+  console.warn("⚠️  DEV_BYPASS_PAYMENT=true — x402 paywall DISABLED. Dev only; no on-chain payment.");
+} else {
+  app.use(
+    paymentMiddleware(
+      {
+        "POST /v1/speak": {
+          accepts: [
+            {
+              scheme: "exact",
+              price: "$0.001",
+              network: chainID,
+              payTo: cfg.payeeAddress,
+            },
+          ],
+          description: "Text-to-speech via Deepgram, paid per call over x402",
+          mimeType: "audio/mpeg",
+        },
       },
-    },
-    new x402ResourceServer(facilitatorClient).register(chainID, casperScheme),
-  ),
-);
+      new x402ResourceServer(facilitatorClient).register(chainID, casperScheme),
+    ),
+  );
+}
 
 // Protected: only runs after payment has settled on-chain.
 app.post("/v1/speak", async (req, res) => {
