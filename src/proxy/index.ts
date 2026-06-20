@@ -21,6 +21,7 @@ interface Env {
   chainID: string;
   assetPackage: string;
   assetName: string;
+  assetSymbol: string;
   priceMotes: string;
   deepgramApiKey: string;
   deepgramModel: string;
@@ -43,6 +44,7 @@ function parseEnv(): Env {
     chainID: required("CAIP2_CHAIN_ID"),
     assetPackage: required("ASSET_PACKAGE"),
     assetName: process.env.ASSET_NAME || "Wrapped CSPR",
+    assetSymbol: process.env.ASSET_SYMBOL || "WCSPR",
     priceMotes: process.env.PRICE_MOTES || "100000000",
     deepgramApiKey: required("DEEPGRAM_API_KEY"),
     deepgramModel: process.env.DEEPGRAM_TTS_MODEL || "aura-2-thalia-en",
@@ -70,7 +72,7 @@ const facilitatorClient = new HTTPFacilitatorClient(facilitatorConfig);
 const assetAmount: AssetAmount = {
   asset: assetPackage,
   amount: cfg.priceMotes,
-  extra: { name: cfg.assetName, symbol: "WCSPR", version: "1", decimals: "9" },
+  extra: { name: cfg.assetName, symbol: cfg.assetSymbol, version: "1", decimals: "9" },
 };
 
 const casperScheme = new ExactCasperScheme()

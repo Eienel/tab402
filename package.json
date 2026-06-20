@@ -9,6 +9,7 @@
     "proxy": "tsx src/proxy/index.ts",
     "agent": "tsx src/agent/index.ts",
     "keygen": "tsx src/tools/keygen.ts",
+    "deploy-token": "tsx src/tools/deploy-token.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
