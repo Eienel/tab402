@@ -4,134 +4,339 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Casper Agent Rail — spend-bounded API payments for autonomous agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0a0a0b; --panel:#121214; --panel2:#16161a; --line:#26262c;
-    --text:#ECECEE; --muted:#9a9aa3; --accent:#ff3b30; --accent2:#ff6a4d;
-    --good:#36d399; --warn:#ffb020;
-    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
-    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    --bg:#0b0b0d; --panel:#141417; --panel2:#1a1a20; --line:#27272e;
+    --text:#ededf0; --muted:#9595a0; --faint:#62626c;
+    --accent:#e8412f; --accent-soft:rgba(232,65,47,.12); --accent-line:rgba(232,65,47,.32);
+    --good:#36cf9b; --warn:#e8b339;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --ease:cubic-bezier(.16,1,.3,1);
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
-    line-height:1.5;-webkit-font-smoothing:antialiased}
-  a{color:var(--accent2);text-decoration:none}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
-  .nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em}
-  .dot{width:12px;height:12px;border-radius:3px;background:var(--accent);
-    box-shadow:0 0 16px var(--accent)}
-  .pill{font-size:12px;color:var(--muted);border:1px solid var(--line);
-    padding:5px 10px;border-radius:999px}
-  /* hero */
-  .hero{padding:64px 0 40px}
-  .tag{color:var(--accent2);font-family:var(--mono);font-size:13px;letter-spacing:.04em}
-  h1{font-size:54px;line-height:1.05;letter-spacing:-.03em;margin:14px 0 18px;font-weight:760}
-  h1 .grad{background:linear-gradient(90deg,var(--accent),var(--accent2));
-    -webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{font-size:19px;color:var(--muted);max-width:680px}
-  .cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
-  .btn{padding:12px 18px;border-radius:10px;font-weight:600;font-size:15px;
-    border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
+    line-height:1.55;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+  .mono{font-family:var(--mono)}
+  .accent{color:var(--accent)}
+
+  /* grain */
+  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(11,11,13,.72);border-bottom:1px solid var(--line)}
+  .navin{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:600;letter-spacing:-.02em}
+  .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);
+    display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset}
+  .links{display:flex;gap:30px;align-items:center}
+  .links a{color:var(--muted);font-size:14px;font-weight:500;position:relative;padding:4px 0;transition:color .25s var(--ease)}
+  .links a:hover{color:var(--text)}
+  .links a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--accent);transition:width .3s var(--ease)}
+  .links a:hover::after{width:100%}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:9px;
+    font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--panel);
+    color:var(--text);cursor:pointer;transition:transform .15s var(--ease),border-color .25s,background .25s}
+  .btn:hover{border-color:#3a3a42}
+  .btn:active{transform:translateY(1px) scale(.99)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  /* sections */
-  section{padding:46px 0;border-top:1px solid var(--line)}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
-    font-weight:600;margin:0 0 22px}
-  .lead{font-size:24px;letter-spacing:-.02em;max-width:760px;margin:0 0 8px}
-  .grid{display:grid;gap:16px}
-  .cols-2{grid-template-columns:1fr 1fr}
-  .cols-3{grid-template-columns:repeat(3,1fr)}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
-  .card h3{margin:0 0 8px;font-size:16px}
-  .card p{margin:0;color:var(--muted);font-size:14px}
-  .k{font-family:var(--mono);color:var(--accent2)}
-  /* flow */
-  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
-  .step{flex:1;min-width:150px;background:var(--panel2);border:1px solid var(--line);
-    border-radius:12px;padding:16px}
+  .btn.primary:hover{filter:brightness(1.06)}
+  @media(max-width:780px){.links{display:none}}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;
+    padding:84px 0 64px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;
+    color:var(--muted);border:1px solid var(--line);padding:6px 11px;border-radius:999px;background:var(--panel)}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(54,207,155,.5);animation:pulse 2.4s var(--ease) infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(54,207,155,.45)}70%{box-shadow:0 0 0 7px rgba(54,207,155,0)}100%{box-shadow:0 0 0 0 rgba(54,207,155,0)}}
+  h1{font-size:clamp(38px,5vw,62px);line-height:1.02;letter-spacing:-.035em;font-weight:700;margin:20px 0 20px}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{font-size:18px;color:var(--muted);max-width:30ch;line-height:1.6}
+  .hero .sub{max-width:46ch}
+  .cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+  /* hero terminal */
+  .term{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:13px 15px;border-bottom:1px solid var(--line)}
+  .term .bar i{width:11px;height:11px;border-radius:50%;background:#2c2c34;display:block}
+  .term .bar span{margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--faint)}
+  .term pre{margin:0;padding:18px 18px 20px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:#c9c9d2;overflow-x:auto}
+  .term .c{color:var(--faint)} .term .g{color:var(--good)} .term .r{color:var(--accent)} .term .y{color:var(--warn)}
+  @media(max-width:880px){.hero{grid-template-columns:1fr;gap:36px;padding:56px 0 40px}.hero .sub{max-width:100%}}
+
+  /* trust strip */
+  .strip{display:flex;gap:34px;align-items:center;flex-wrap:wrap;padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .strip .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .strip b{font-weight:500;color:var(--muted);font-size:15px}
+
+  section{padding:78px 0;border-top:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 16px}
+  .h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;font-weight:600;margin:0 0 14px;max-width:18ch;line-height:1.1}
+  .p{color:var(--muted);font-size:17px;max-width:60ch;line-height:1.65}
+
+  /* problem — asymmetric 2-col, no 3-card row */
+  .prob{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:40px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .prob .cell{padding:30px 30px;border-bottom:1px solid var(--line)}
+  .prob .cell:nth-child(odd){border-right:1px solid var(--line)}
+  .prob .cell h3{margin:0 0 9px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:10px}
+  .prob .cell p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+  .ic{width:18px;height:18px;color:var(--accent);flex:none}
+  @media(max-width:760px){.prob{grid-template-columns:1fr}.prob .cell:nth-child(odd){border-right:none}}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:42px;
+    border-top:1px solid var(--line)}
+  .step{padding:26px 22px 26px 0;border-right:1px solid var(--line)}
+  .step:last-child{border-right:none;padding-right:0}
   .step .n{font-family:var(--mono);font-size:12px;color:var(--accent)}
-  .step h4{margin:6px 0 6px;font-size:15px}
-  .step p{margin:0;font-size:13px;color:var(--muted)}
+  .step h4{margin:14px 0 8px;font-size:16px;font-weight:600}
+  .step p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+  @media(max-width:820px){.steps{grid-template-columns:1fr 1fr}.step{border-right:none;border-bottom:1px solid var(--line);padding:22px 0}}
+  @media(max-width:520px){.steps{grid-template-columns:1fr}}
+
   /* demo */
-  .demo{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
-  .meter{height:14px;background:#000;border:1px solid var(--line);border-radius:999px;overflow:hidden}
-  .meter > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--good),#2bbf9e);transition:width .5s ease}
-  .ledger{font-family:var(--mono);font-size:13px;margin-top:18px;min-height:170px}
-  .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line)}
-  .row .left{color:var(--text)}
-  .row .cost{color:var(--accent2)}
-  .silent{color:var(--warn);font-weight:600;margin-top:12px}
-  .muted{color:var(--muted)}
-  footer{padding:40px 0;color:var(--muted);font-size:13px}
-  @media(max-width:760px){.cols-2,.cols-3{grid-template-columns:1fr}h1{font-size:38px}}
+  .demo{display:grid;grid-template-columns:.9fr 1.1fr;gap:40px;align-items:center;margin-top:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px}
+  .meterhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .meterhead b{color:var(--text);font-size:22px;font-weight:500}
+  .meter{height:12px;background:#08080a;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .meter>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--good),#2aa)}
+  .ledger{font-family:var(--mono);font-size:12.5px;margin-top:18px;min-height:182px}
+  .lrow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);opacity:0;transform:translateY(6px);animation:rise .4s var(--ease) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .lrow .t{color:var(--text)} .lrow .t svg{vertical-align:-2px;margin-right:7px;color:var(--good)}
+  .lrow .cost{color:var(--accent);white-space:nowrap}
+  .silent{margin-top:14px;color:var(--warn);font-weight:600;display:flex;align-items:center;gap:9px}
+  @media(max-width:820px){.demo{grid-template-columns:1fr;gap:26px}}
+
+  /* bento why-casper */
+  .bento{display:grid;grid-template-columns:1.5fr 1fr;grid-auto-rows:1fr;gap:16px;margin-top:42px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;
+    transition:border-color .3s var(--ease),transform .3s var(--ease)}
+  .tile:hover{border-color:#36363f;transform:translateY(-2px)}
+  .tile.span{grid-row:span 2}
+  .tile h4{margin:0 0 8px;font-size:17px;font-weight:600}
+  .tile p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
+  .tile .big{font-family:var(--mono);font-size:34px;color:var(--text);letter-spacing:-.02em;margin-bottom:6px}
+  @media(max-width:760px){.bento{grid-template-columns:1fr}.tile.span{grid-row:auto}}
+
+  /* integration */
+  .integ{display:grid;grid-template-columns:.9fr 1.1fr;gap:40px;align-items:center;margin-top:8px}
+  @media(max-width:820px){.integ{grid-template-columns:1fr;gap:24px}}
+
+  footer{padding:54px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:end}
+  .foot a{color:var(--muted)}.foot a:hover{color:var(--text)}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="nav">
-    <div class="brand"><span class="dot"></span> Casper Agent Rail</div>
-    <span class="pill">Casper Agentic Buildathon 2026</span>
-  </div>
+<div class="grain"></div>
 
+<nav>
+  <div class="wrap navin">
+    <div class="brand">
+      <span class="mark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 12h10M4 7h16M4 17h7"/></svg>
+      </span>
+      Casper Agent Rail
+    </div>
+    <div class="links">
+      <a href="#problem">Problem</a>
+      <a href="#how">How it works</a>
+      <a href="#demo">Demo</a>
+      <a href="#why">Why Casper</a>
+      <a href="#build">Integrate</a>
+      <a class="btn" href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
   <header class="hero">
-    <div class="tag">x402 · Casper · agent-native payments</div>
-    <h1>Give your agent <span class="grad">a budget it can't blow.</span></h1>
-    <p class="sub">Autonomous agents hold crypto but the world's APIs run on cards.
-      Casper Agent Rail lets an agent pay for real APIs <b>per request</b> from an
-      on-chain balance — with a hard spending cap it <i>physically cannot exceed.</i></p>
-    <div class="cta">
-      <button class="btn primary" onclick="runDemo()">▶ Watch the agent spend</button>
-      <a class="btn" href="https://github.com/" target="_blank">View on GitHub</a>
+    <div>
+      <span class="eyebrow"><span class="pulse"></span> x402 · Casper testnet · live</span>
+      <h1>Give your agent a budget<br>it <em>can't blow.</em></h1>
+      <p class="sub">Autonomous agents hold crypto, but the world's APIs run on cards. Agent Rail
+        lets an agent pay for real APIs per request from an on-chain balance — with a hard
+        spending cap it physically cannot exceed.</p>
+      <div class="cta">
+        <button class="btn primary" onclick="document.getElementById('demo').scrollIntoView()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Watch the agent spend
+        </button>
+        <a class="btn" href="#build">Read the integration</a>
+      </div>
+    </div>
+    <div class="term reveal">
+      <div class="bar"><i></i><i></i><i></i><span>agent · /v1/speak</span></div>
+<pre><span class="c"># agent points at the rail, not the provider</span>
+POST /v1/speak  <span class="y">402 Payment Required</span>
+  price  <span class="r">0.10 X402</span>  net <span class="g">casper:casper-test</span>
+
+<span class="c"># agent signs x402 authorization, replays</span>
+settle <span class="g">ok</span>  tx <span class="g">a7f3…b1</span>  left <span class="r">0.25 X402</span>
+speak  <span class="g">200</span>  audio 22.1kB  <span class="c">→ out/line-01.mp3</span>
+
+<span class="c"># budget runs dry</span>
+settle <span class="y">insufficient_balance</span>  <span class="y">agent goes silent</span></pre>
     </div>
   </header>
 
-  <section>
-    <h2>The gap</h2>
-    <p class="lead">x402 lets agents pay crypto-native services. It does nothing for the
-      99% of APIs that only take a card — and nothing to stop an agent from draining
-      your account overnight.</p>
-    <div class="grid cols-3" style="margin-top:22px">
-      <div class="card"><h3>Agents can't hold a Visa</h3><p>A non-human economic actor has a wallet, not a credit card. The fiat world won't onboard it.</p></div>
-      <div class="card"><h3>No spend ceiling</h3><p>Hand an agent an API key and it can burn $10k while you sleep. Nobody ships that to production.</p></div>
-      <div class="card"><h3>No verifiable metering</h3><p>You trust the provider's invoice. There's no on-chain proof you were charged for exactly what you used.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>How it works</h2>
-    <div class="flow">
-      <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>Points at our endpoint instead of the provider, holding a Casper key + token budget.</p></div>
-      <div class="step"><div class="n">02</div><h4>402 + price</h4><p>The rail answers <span class="k">402 Payment Required</span> with a per-call price in our CEP-18 token.</p></div>
-      <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper. Instant finality (Zug).</p></div>
-      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API (Deepgram) and returns the result — with an on-chain receipt.</p></div>
-    </div>
-    <div class="grid cols-2" style="margin-top:16px">
-      <div class="card"><h3>The moat: spend-bounded access</h3><p>The agent's on-chain token balance <i>is</i> its cap. Run it dry and the next call simply can't settle. Overspend is impossible, not just discouraged.</p></div>
-      <div class="card"><h3>Why Casper</h3><p>Zug's deterministic instant finality makes per-call on-chain settlement viable — impossible on probabilistic chains. Every API call is one real transaction.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Live demo — a voice agent on a budget</h2>
-    <p class="muted" style="margin-bottom:18px">Claude writes a script. The agent pays per line and goes
-      <b style="color:var(--warn)">silent</b> the instant its budget runs out.</p>
-    <div class="demo">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-family:var(--mono);font-size:13px">
-        <span>budget</span><span id="bal">0.35 X402</span>
-      </div>
-      <div class="meter"><i id="bar"></i></div>
-      <div class="ledger" id="ledger"><span class="muted">Press “Watch the agent spend”.</span></div>
-    </div>
-  </section>
-
-  <footer>
-    Built for the Casper Agentic Buildathon 2026 · x402 · Deepgram · Odra<br/>
-    Spend-bounded API payments for the agent economy.
-  </footer>
+  <div class="strip reveal">
+    <span class="lbl">Built with</span>
+    <b>Casper&nbsp;2.0</b><b>x402</b><b>CEP-18</b><b>Deepgram</b><b>Claude</b><b>Odra</b>
+  </div>
 </div>
 
+<section id="problem">
+  <div class="wrap">
+    <p class="kicker">The gap</p>
+    <h2 class="h2">x402 lets agents pay. Nothing lets you trust them with money.</h2>
+    <p class="p">Pay-per-call settles the crypto-native services. It does nothing for the APIs that
+      only take a card — and nothing to stop an agent from draining your account overnight.</p>
+    <div class="prob reveal">
+      <div class="cell">
+        <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Agents can't hold a card</h3>
+        <p>A non-human economic actor has a wallet, not a Visa. The fiat world won't onboard it, so it can't reach the services it needs.</p>
+      </div>
+      <div class="cell">
+        <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg> No spend ceiling</h3>
+        <p>Hand an agent an API key and it can burn thousands while you sleep. Nobody ships that to production without a hard cap.</p>
+      </div>
+      <div class="cell">
+        <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg> No verifiable metering</h3>
+        <p>You trust the provider's invoice. There is no on-chain proof you were charged for exactly the work you consumed.</p>
+      </div>
+      <div class="cell">
+        <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg> No machine-native rail</h3>
+        <p>Subscriptions and cards assume a human in the loop. Agents need to pay a fraction of a cent, per request, with no approval step.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="kicker">How it works</p>
+    <h2 class="h2">Four steps, one on-chain transaction per call.</h2>
+    <p class="p">The agent never leaves its budget. Every fulfilled request is a real settlement on
+      Casper — and Zug's instant finality is what makes per-call settlement viable.</p>
+    <div class="steps reveal">
+      <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>It points at our endpoint instead of the provider, holding a Casper key and a token budget.</p></div>
+      <div class="step"><div class="n">02</div><h4>402 + price</h4><p>The rail answers <span class="mono accent">402</span> with a per-call price in our CEP-18 token.</p></div>
+      <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper in seconds.</p></div>
+      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API and returns the result — with an on-chain receipt.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <p class="kicker">Live demo</p>
+    <h2 class="h2">A voice agent on a budget.</h2>
+    <p class="p">Claude writes a script. The agent pays per line and goes silent the instant its
+      balance runs out. Overspend isn't discouraged — it's impossible.</p>
+    <div class="demo">
+      <div>
+        <button class="btn primary" onclick="runDemo()" style="margin-bottom:18px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run the agent
+        </button>
+        <p class="p" style="font-size:15px">Budget: <span class="mono accent">0.35 X402</span> · cost
+          <span class="mono">0.10</span>/line. The agent has enough for three lines — then it stops.</p>
+      </div>
+      <div class="panel">
+        <div class="meterhead"><span>remaining budget</span><b id="bal" class="mono">0.35</b></div>
+        <div class="meter"><i id="bar"></i></div>
+        <div class="ledger" id="ledger"><span style="color:var(--faint)">Press “Run the agent”.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <p class="kicker">Why Casper</p>
+    <h2 class="h2">The chain is load-bearing, not incidental.</h2>
+    <div class="bento reveal">
+      <div class="tile span">
+        <div class="big">~2s</div>
+        <h4>Deterministic instant finality (Zug)</h4>
+        <p>Per-call on-chain settlement is only viable with deterministic finality. On a probabilistic
+          chain you'd wait blocks per request — here the agent acts and knows it settled. Every API
+          call becomes one real, final transaction.</p>
+      </div>
+      <div class="tile">
+        <div class="big">CEP-18</div>
+        <h4>Our own credit token</h4>
+        <p>The agent's token balance <i>is</i> its cap. Mint it, meter it, settle it via
+          <span class="mono">transfer_with_authorization</span>.</p>
+      </div>
+      <div class="tile">
+        <div class="big">0.10</div>
+        <h4>Sub-cent micropayments</h4>
+        <p>x402 prices each request in tokens. No accounts, no subscriptions, no human approval.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <div class="wrap">
+    <p class="kicker">Integrate</p>
+    <h2 class="h2">A drop-in endpoint for any agent.</h2>
+    <div class="integ">
+      <p class="p">Point your agent's HTTP client at the rail and fund a Casper key. The x402 client
+        signs payments automatically — your code just calls the endpoint and gets the result back,
+        bounded by a balance it can't exceed.</p>
+      <div class="term">
+        <div class="bar"><i></i><i></i><i></i><span>agent.ts</span></div>
+<pre><span class="c">// the agent pays per call, automatically</span>
+<span class="r">const</span> pay = wrapFetchWithPayment(fetch, client);
+
+<span class="r">const</span> res = <span class="r">await</span> pay(<span class="g">"https://rail/v1/speak"</span>, {
+  method: <span class="g">"POST"</span>,
+  body: JSON.stringify({ text: line }),
+});
+<span class="c">// 402 → sign → settle on Casper → audio</span>
+writeFileSync(<span class="g">"line.mp3"</span>, <span class="r">await</span> res.arrayBuffer());</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <div class="brand" style="margin-bottom:10px"><span class="mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 12h10M4 7h16M4 17h7"/></svg></span> Casper Agent Rail</div>
+      Spend-bounded API payments for the agent economy.<br>
+      Casper Agentic Buildathon 2026.
+    </div>
+    <div style="display:flex;gap:26px">
+      <a href="#how">How it works</a>
+      <a href="#demo">Demo</a>
+      <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</footer>
+
 <script>
+  // scroll reveal (IntersectionObserver — no scroll listeners)
+  const io = new IntersectionObserver((es)=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);} }), {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // budget demo
   const SCRIPT = [
     "I am an autonomous agent, and I hold my own money on Casper.",
     "Every sentence I speak, I pay for myself, per request.",
@@ -139,33 +344,29 @@
     "When my balance runs out, I stop. No surprise bills, ever.",
     "This is what machine-native payments look like."
   ];
-  const COST = 0.10, START = 0.35;
-  let running = false;
+  const COST=0.10, START=0.35;
+  const SPK='<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>';
+  let running=false;
   function runDemo(){
-    if(running) return; running = true;
-    let remaining = START;
-    const ledger = document.getElementById('ledger');
-    const bar = document.getElementById('bar');
-    const bal = document.getElementById('bal');
-    ledger.innerHTML = ''; bar.style.width='100%'; bal.textContent = START.toFixed(2)+' X402';
-    let i = 0;
-    const tick = ()=>{
-      if(i >= SCRIPT.length){ running=false; return; }
-      if(remaining < COST){
+    if(running) return; running=true;
+    let remaining=START, i=0;
+    const ledger=document.getElementById('ledger'), bar=document.getElementById('bar'), bal=document.getElementById('bal');
+    ledger.innerHTML=''; bar.style.width='100%'; bal.textContent=START.toFixed(2);
+    const tick=()=>{
+      if(i>=SCRIPT.length){running=false;return;}
+      if(remaining<COST){
         const d=document.createElement('div'); d.className='silent';
-        d.textContent='🛑 Budget exhausted — agent goes SILENT. '+(SCRIPT.length-i)+' line(s) unspoken.';
+        d.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted — agent goes silent. '+(SCRIPT.length-i)+' line(s) unspoken.';
         ledger.appendChild(d); running=false; return;
       }
-      remaining = +(remaining - COST).toFixed(2);
-      const row=document.createElement('div'); row.className='row';
-      row.innerHTML='<span class="left">🔊 #'+(i+1)+' &nbsp;"'+SCRIPT[i]+'"</span>'+
-        '<span class="cost">-'+COST.toFixed(2)+'</span>';
+      remaining=+(remaining-COST).toFixed(2);
+      const row=document.createElement('div'); row.className='lrow';
+      row.innerHTML='<span class="t">'+SPK+'#'+(i+1)+'&nbsp; '+SCRIPT[i]+'</span><span class="cost">-'+COST.toFixed(2)+'</span>';
       ledger.appendChild(row);
-      bar.style.width = (remaining/START*100)+'%';
-      bal.textContent = remaining.toFixed(2)+' X402';
-      i++; setTimeout(tick, 900);
+      bar.style.width=(remaining/START*100)+'%'; bal.textContent=remaining.toFixed(2);
+      i++; setTimeout(tick,900);
     };
-    setTimeout(tick, 300);
+    setTimeout(tick,260);
   }
 </script>
 </body>
