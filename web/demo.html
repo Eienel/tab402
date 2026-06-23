@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tab — Live demo · a voice agent on a budget</title>
+<meta name="description" content="Watch an autonomous agent pay per line and go silent the instant its on-chain budget runs dry. Overspend isn't discouraged — it's impossible." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Rye&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0b0b0d;--panel:#141417;--panel2:#1a1a20;--line:#27272e;
+    --text:#ededf0;--muted:#9595a0;--faint:#62626c;
+    --accent:#e8412f;--accent-soft:rgba(232,65,47,.12);
+    --good:#36cf9b;--warn:#e8b339;--brass:#c9962b;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --display:"Rye",Georgia,serif;--ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  html,body{overflow-x:hidden}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+  .accent{color:var(--accent)}
+  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(11,11,13,.72);border-bottom:1px solid var(--line)}
+  .navin{display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:19px;letter-spacing:.01em}
+  .mark{width:27px;height:27px;border-radius:7px;background:var(--accent);flex:none;
+    display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 0 14px rgba(232,65,47,.22)}
+  .navcta{display:flex;align-items:center;gap:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:9px;
+    font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid var(--line);background:var(--panel);
+    color:var(--text);cursor:pointer;transition:transform .15s var(--ease),border-color .25s,background .25s,filter .2s}
+  .btn:hover{border-color:#3a3a42}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.06)}
+  .btn.ghost{background:var(--panel2)}
+
+  header.intro{padding:64px 0 8px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 14px;
+    display:inline-flex;align-items:center;gap:9px}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(54,207,155,.5);animation:pulse 2.4s var(--ease) infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(54,207,155,.45)}70%{box-shadow:0 0 0 8px rgba(54,207,155,0)}100%{box-shadow:0 0 0 0 rgba(54,207,155,0)}}
+  h1{font-size:clamp(30px,5.2vw,48px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:0 0 16px}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{font-size:clamp(15px,2.4vw,18px);color:var(--muted);max-width:56ch;line-height:1.6}
+
+  /* demo stage */
+  .stage{display:grid;grid-template-columns:.85fr 1.15fr;gap:26px;align-items:start;margin:34px 0 8px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px}
+  .controls h3{margin:0 0 6px;font-size:15px;font-weight:600}
+  .controls p.note{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
+  .field{margin-bottom:18px}
+  .field .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:9px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{flex:1 1 auto;min-width:74px;padding:11px 8px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);
+    color:var(--muted);font-family:var(--mono);font-size:13px;cursor:pointer;text-align:center;transition:all .2s var(--ease)}
+  .chip b{display:block;color:var(--text);font-size:15px;margin-bottom:2px}
+  .chip[aria-pressed="true"]{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
+  .runrow{display:flex;gap:10px;flex-wrap:wrap}
+  .runrow .btn{flex:1 1 auto}
+
+  .meterhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .meterhead b{color:var(--text);font-size:24px;font-weight:500}
+  .meter{height:12px;background:#08080a;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .meter>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--good),#2aa);transition:width .5s var(--ease)}
+  .ledger{font-family:var(--mono);font-size:12.5px;margin-top:18px;min-height:200px}
+  .lrow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);
+    opacity:0;transform:translateY(6px);animation:rise .4s var(--ease) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .lrow .t{color:var(--text);min-width:0}
+  .lrow .t svg{vertical-align:-2px;margin-right:7px;color:var(--good);flex:none}
+  .lrow .cost{color:var(--accent);white-space:nowrap}
+  .silent{margin-top:14px;color:var(--warn);font-weight:600;display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.5}
+  .silent svg{flex:none;margin-top:2px}
+  .seed{color:var(--faint)}
+
+  /* explainer */
+  .how{border-top:1px solid var(--line);margin-top:40px;padding:40px 0 0}
+  .how .kicker{color:var(--accent)}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:18px;border-top:1px solid var(--line)}
+  .step{padding:22px 20px 22px 0;border-right:1px solid var(--line)}
+  .step:last-child{border-right:none;padding-right:0}
+  .step .n{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .step h4{margin:12px 0 7px;font-size:15px;font-weight:600}
+  .step p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+  .realnote{margin-top:30px;color:var(--muted);font-size:14.5px;line-height:1.65;max-width:62ch}
+  .realnote a{color:var(--accent);border-bottom:1px solid var(--accent-line,rgba(232,65,47,.4))}
+
+  footer{padding:48px 0 56px;margin-top:44px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+  .foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
+  .foot a{color:var(--muted)}.foot a:hover{color:var(--text)}
+
+  /* ---- responsive ---- */
+  @media(max-width:860px){
+    .stage{grid-template-columns:1fr;gap:18px}
+    .steps{grid-template-columns:1fr 1fr}
+    .step{border-right:none;border-bottom:1px solid var(--line);padding:18px 0}
+    .step:nth-child(odd){border-right:1px solid var(--line);padding-right:18px}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 16px}
+    header.intro{padding:40px 0 4px}
+    .navcta .btn.hide-sm{display:none}
+    .panel{padding:18px}
+    .steps{grid-template-columns:1fr}
+    .step:nth-child(odd){border-right:none;padding-right:0}
+    .ledger{min-height:0}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav>
+  <div class="wrap navin">
+    <a class="brand" href="/">
+      <span class="mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.6 6.3L21 9l-5 4.1L17.6 20 12 16.3 6.4 20 8 13.1 3 9l6.4-.7z"/></svg></span>
+      Tab
+    </a>
+    <div class="navcta">
+      <a class="btn ghost hide-sm" href="/">← Home</a>
+      <a class="btn" href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="kicker"><span class="pulse"></span> Live demo</span>
+    <h1>A voice agent on a budget —<br>and the wall it <em>can't cross.</em></h1>
+    <p class="sub">Claude writes a script. The agent pays for every line from its own on-chain balance and goes
+      silent the instant the money runs out. Pick a budget and run it: overspend isn't discouraged here — it's impossible.</p>
+  </header>
+
+  <div class="stage">
+    <div class="panel controls">
+      <h3>Set the budget</h3>
+      <p class="note">Each spoken line settles on Casper for <span class="mono accent">0.10 X402</span>. Choose how much
+        the agent gets to start with.</p>
+      <div class="field">
+        <span class="lbl">Starting budget</span>
+        <div class="chips" id="chips">
+          <button class="chip" data-budget="0.20" aria-pressed="false"><b>0.20</b>2 lines</button>
+          <button class="chip" data-budget="0.35" aria-pressed="true"><b>0.35</b>3 lines</button>
+          <button class="chip" data-budget="0.50" aria-pressed="false"><b>0.50</b>5 lines</button>
+        </div>
+      </div>
+      <div class="runrow">
+        <button class="btn primary" id="run" onclick="runDemo()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run the agent
+        </button>
+        <button class="btn ghost" id="reset" onclick="resetDemo()">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="meterhead"><span>remaining budget</span><b id="bal" class="mono">0.35</b></div>
+      <div class="meter"><i id="bar"></i></div>
+      <div class="ledger" id="ledger"><span class="seed">Pick a budget and press “Run the agent”.</span></div>
+    </div>
+  </div>
+
+  <section class="how">
+    <p class="kicker">What just happened</p>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>It points at our endpoint instead of the provider, holding a Casper key and a token budget.</p></div>
+      <div class="step"><div class="n">02</div><h4>402 + price</h4><p>The rail answers <span class="mono accent">402</span> with a per-line price in our CEP-18 token.</p></div>
+      <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper in seconds.</p></div>
+      <div class="step"><div class="n">04</div><h4>Silence at zero</h4><p>When the balance can't cover the next line, the call simply fails. No overdraft, no surprise bill.</p></div>
+    </div>
+    <p class="realnote">This page simulates the budget logic so you can see the wall without funding a wallet. The real rail
+      does exactly this on Casper testnet — every line becomes a final on-chain settlement. See it for real in the
+      <a href="/dashboard">developer dashboard</a> or read the <a href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">integration on GitHub</a>.</p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand" style="font-size:17px"><span class="mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.6 6.3L21 9l-5 4.1L17.6 20 12 16.3 6.4 20 8 13.1 3 9l6.4-.7z"/></svg></span> Tab</div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const SCRIPT = [
+    "I am an autonomous agent, and I hold my own money on Casper.",
+    "Every sentence I speak, I pay for myself, per request.",
+    "My budget is enforced on-chain. I literally cannot overspend.",
+    "When my balance runs out, I stop. No surprise bills, ever.",
+    "This is what machine-native payments look like."
+  ];
+  const COST = 0.10;
+  const SPK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>';
+  let START = 0.35, running = false, timer = null;
+
+  const $ = id => document.getElementById(id);
+
+  // budget chips
+  document.querySelectorAll('#chips .chip').forEach(c => c.addEventListener('click', () => {
+    if(running) return;
+    document.querySelectorAll('#chips .chip').forEach(x => x.setAttribute('aria-pressed','false'));
+    c.setAttribute('aria-pressed','true');
+    START = parseFloat(c.dataset.budget);
+    resetDemo();
+  }));
+
+  function resetDemo(){
+    running = false; if(timer) clearTimeout(timer);
+    $('ledger').innerHTML = '<span class="seed">Press “Run the agent”.</span>';
+    $('bar').style.width = '100%';
+    $('bal').textContent = START.toFixed(2);
+    $('run').disabled = false;
+  }
+
+  function runDemo(){
+    if(running) return;
+    running = true; $('run').disabled = true;
+    let remaining = START, i = 0;
+    const ledger = $('ledger'), bar = $('bar'), bal = $('bal');
+    ledger.innerHTML = ''; bar.style.width = '100%'; bal.textContent = START.toFixed(2);
+    const tick = () => {
+      if(i >= SCRIPT.length){ running = false; $('run').disabled = false; return; }
+      if(remaining < COST){
+        const d = document.createElement('div'); d.className = 'silent';
+        d.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted — agent goes silent. ' + (SCRIPT.length - i) + ' line(s) unspoken.';
+        ledger.appendChild(d); running = false; $('run').disabled = false; return;
+      }
+      remaining = +(remaining - COST).toFixed(2);
+      const row = document.createElement('div'); row.className = 'lrow';
+      row.innerHTML = '<span class="t">' + SPK + '#' + (i+1) + '&nbsp; ' + SCRIPT[i] + '</span><span class="cost">-' + COST.toFixed(2) + '</span>';
+      ledger.appendChild(row);
+      bar.style.width = (remaining / START * 100) + '%'; bal.textContent = remaining.toFixed(2);
+      i++; timer = setTimeout(tick, 900);
+    };
+    timer = setTimeout(tick, 260);
+  }
+
+  resetDemo();
+</script>
+</body>
+</html>
