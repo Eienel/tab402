@@ -10,6 +10,7 @@ import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactCasperScheme } from "@make-software/casper-x402/exact/server";
 import { FacilitatorConfig, HTTPFacilitatorClient } from "@x402/core/server";
 import { AssetAmount, Network } from "@x402/core/types";
+import dashboardApi from "../dashboard/api.js";
 
 config();
 
@@ -98,6 +99,10 @@ app.use(
 );
 app.use(express.json());
 
+// ---- Mount dashboard API routes before payment middleware ----
+// These are public, developer-facing endpoints (no payment required)
+app.use("/api", dashboardApi);
+
 if (cfg.devBypass) {
   console.warn("⚠️  DEV_BYPASS_PAYMENT=true — x402 paywall DISABLED. Dev only; no on-chain payment.");
 } else {
@@ -172,4 +177,5 @@ app.get("/health", (_req, res) => res.json({ status: "ok", service: "casper-agen
 app.listen(cfg.port, () => {
   console.log(`🛤️  Proxy (rail) listening at http://localhost:${cfg.port}`);
   console.log(`    Pay-gated: POST /v1/speak  @ ${cfg.priceMotes} motes WCSPR per call`);
+  console.log(`    Dashboard API: GET/POST /api/*`);
 });
