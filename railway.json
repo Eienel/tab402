@@ -1,0 +1,32 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "dockerfile",
+    "dockerfile": "Dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "sh -c 'npm run facilitator > /tmp/facilitator.log 2>&1 & npm run proxy'",
+    "restartPolicyMaxRetries": 5,
+    "healthchecks": {
+      "readinessProbe": {
+        "httpGet": {
+          "path": "/health",
+          "port": 4021
+        },
+        "initialDelaySeconds": 10,
+        "periodSeconds": 30
+      }
+    }
+  },
+  "variables": {
+    "PORT": {
+      "description": "Facilitator port",
+      "value": "4022"
+    },
+    "PROXY_PORT": {
+      "description": "Proxy/Rail port",
+      "value": "4021"
+    }
+  }
+}
