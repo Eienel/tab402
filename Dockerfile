@@ -1,43 +1,43 @@
-# Multi-stage build for optimal image size and runtime
-FROM node:22-alpine AS builder
+ # Multi-stage build for optimal image size and runtime
+   FROM node:22-alpine AS builder
 
-WORKDIR /app
+   WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
+   # Copy package files
+   COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+   # Install dependencies
+   RUN npm ci
 
-# Copy source code
-COPY tsconfig.json ./
-COPY src ./src
+   # Copy source code
+   COPY tsconfig.json ./
+   COPY src ./src
 
-# Build/verify TypeScript
-RUN npm run typecheck
+   # Copy the rest
+   COPY . .
 
-# Runtime stage
-FROM node:22-alpine
+   # Runtime stage
+   FROM node:22-alpine
 
-WORKDIR /app
+   WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+   # Install dumb-init for proper signal handling
+   RUN apk add --no-cache dumb-init
 
-# Copy dependencies from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
-COPY package.json tsconfig.json ./
+   # Copy dependencies from builder
+   COPY --from=builder /app/node_modules ./node_modules
+   COPY --from=builder /app/src ./src
+   COPY --from=builder /app/package.json ./
+   COPY --from=builder /app/tsconfig.json ./
 
-# Create data directory for ledger
-RUN mkdir -p data
+   # Create data directory for ledger
+   RUN mkdir -p data
 
-# Expose all three service ports
-EXPOSE 4021 4022 3000
+   # Expose all three service ports
+   EXPOSE 4021 4022 3000
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
+   # Use dumb-init to handle signals properly
+   ENTRYPOINT ["dumb-init", "--"]
 
-# Default: start facilitator + proxy in background, then proxy in foreground
-# Railway will map ports, and we'll handle service routing via environment
-CMD ["sh", "-c", "npm run facilitator > /tmp/facilitator.log 2>&1 & npm run proxy"]
+   # Default: start facilitator + proxy in background, then proxy in foreground
+   CMD ["sh", "-c", "npm run facilitator > /tmp/facilitator.log 2>&1 & npm run proxy"]
