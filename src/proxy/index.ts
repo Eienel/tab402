@@ -174,8 +174,8 @@ app.post("/v1/speak", async (req, res) => {
 
 app.get("/health", (_req, res) => res.json({ status: "ok", service: "casper-agent-rail/proxy" }));
 
-app.listen(cfg.port, () => {
-  console.log(`🛤️  Proxy (rail) listening at http://localhost:${cfg.port}`);
+app.listen(cfg.port, "0.0.0.0", () => {
+  console.log(`🛤️  Proxy (rail) listening at http://0.0.0.0:${cfg.port}`);
   console.log(`    Pay-gated: POST /v1/speak  @ ${cfg.priceMotes} motes WCSPR per call`);
   console.log(`    Dashboard API: GET/POST /api/*`);
 });
