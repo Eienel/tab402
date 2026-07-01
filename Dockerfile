@@ -13,8 +13,8 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY src ./src
 
-# Build/verify TypeScript
-RUN npm run typecheck
+# Copy the rest of the project (not node_modules)
+COPY . .
 
 # Runtime stage
 FROM node:22-alpine
@@ -27,7 +27,8 @@ RUN apk add --no-cache dumb-init
 # Copy dependencies from builder
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
-COPY package.json tsconfig.json ./
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/tsconfig.json ./
 
 # Create data directory for ledger
 RUN mkdir -p data
@@ -39,5 +40,4 @@ EXPOSE 4021 4022 3000
 ENTRYPOINT ["dumb-init", "--"]
 
 # Default: start facilitator + proxy in background, then proxy in foreground
-# Railway will map ports, and we'll handle service routing via environment
 CMD ["sh", "-c", "npm run facilitator > /tmp/facilitator.log 2>&1 & npm run proxy"]

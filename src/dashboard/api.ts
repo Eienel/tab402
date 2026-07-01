@@ -56,7 +56,8 @@ router.get("/stats", (_req: Request, res: Response) => {
 router.post("/provision", (_req: Request, res: Response) => {
   try {
     // Generate new ED25519 key pair
-    const privateKey = casperSdk.PrivateKey.fromRandomBytes(
+    // Use PrivateKey.generate() instead of fromRandomBytes
+    const privateKey = casperSdk.PrivateKey.generate(
       casperSdk.KeyAlgorithm.ED25519
     );
 
