@@ -1,13 +1,5 @@
-# fly.toml app configuration for tab402
-# Deploy: flyctl launch --image tab402 --region iad
-# See https://fly.io/docs/reference/configuration/ for more info
-
 app = "tab402"
 primary_region = "iad"
-
-[build]
-  builder = "dockerfile"
-  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 4021
