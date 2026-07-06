@@ -129,9 +129,9 @@ app.get("/demo", page("demo.html"));
 const DEMO_KEY_PATH = process.env.DEMO_AGENT_KEY_PATH || "./facilitator.pem";
 const DEMO_MAX_CHARS = parseInt(process.env.DEMO_MAX_CHARS || "300", 10);
 
-let demoFetch: typeof fetch | null = null;
+// Build a fresh payment client per request — reusing one across calls can
+// carry stale scheme state into the next payment authorization.
 async function getDemoFetch(): Promise<typeof fetch> {
-  if (demoFetch) return demoFetch;
   const selector = (_v: number, options: PaymentRequirements[]): PaymentRequirements =>
     options.find(o => o.network.startsWith("casper:")) || options[0];
   const algo =
@@ -140,8 +140,7 @@ async function getDemoFetch(): Promise<typeof fetch> {
       : casperSdk.KeyAlgorithm.ED25519;
   const signer = await createClientCasperSigner(DEMO_KEY_PATH, algo);
   const client = new x402Client(selector).register("casper:*", new ExactCasperClientScheme(signer));
-  demoFetch = wrapFetchWithPayment(fetch, client) as typeof fetch;
-  return demoFetch;
+  return wrapFetchWithPayment(fetch, client) as typeof fetch;
 }
 
 let demoInFlight = 0;
@@ -170,7 +169,13 @@ app.post("/api/demo/speak", async (req, res) => {
     if (!audioRes.ok) {
       const detail = await audioRes.text();
       console.error("Demo speak failed", audioRes.status, detail);
-      return res.status(502).json({ error: "demo_speak_failed", status: audioRes.status, detail });
+      const hint =
+        audioRes.status === 402
+          ? "payment rejected - check treasury X402/CSPR balance and facilitator logs"
+          : undefined;
+      return res
+        .status(502)
+        .json({ error: "demo_speak_failed", status: audioRes.status, detail, hint });
     }
     const settle =
       audioRes.headers.get("PAYMENT-RESPONSE") || audioRes.headers.get("X-PAYMENT-RESPONSE");
