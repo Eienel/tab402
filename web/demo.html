@@ -179,8 +179,8 @@
       <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper in seconds.</p></div>
       <div class="step"><div class="n">04</div><h4>Silence at zero</h4><p>When the balance can't cover the next line, the call simply fails. No overdraft, no surprise bill.</p></div>
     </div>
-    <p class="realnote">This page simulates the budget logic so you can see the wall without funding a wallet. The real rail
-      does exactly this on Casper testnet - every line becomes a final on-chain settlement. See it for real in the
+    <p class="realnote">Every line you hear is real: the payment settles on Casper testnet (click a tx link to verify on the
+      explorer) and the audio comes back from the paid rail. Provision your own key in the
       <a href="/dashboard">developer dashboard</a> or read the <a href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">integration on GitHub</a>.</p>
   </section>
 </div>
@@ -221,33 +221,82 @@
 
   function resetDemo(){
     running = false; if(timer) clearTimeout(timer);
+    if(currentAudio){ try{ currentAudio.pause(); }catch(e){} currentAudio = null; }
     $('ledger').innerHTML = '<span class="seed">Press “Run the agent”.</span>';
     $('bar').style.width = '100%';
     $('bal').textContent = START.toFixed(2);
     $('run').disabled = false;
   }
 
-  function runDemo(){
+  // Pull the on-chain tx hash out of the x402 PAYMENT-RESPONSE header (base64 JSON).
+  function settleTx(res){
+    try{
+      const h = res.headers.get('PAYMENT-RESPONSE');
+      if(!h) return null;
+      const j = JSON.parse(atob(h));
+      return j.transaction || j.txHash || (j.details && j.details.transaction) || null;
+    }catch(e){ return null; }
+  }
+
+  function playBlob(blob){
+    return new Promise(resolve => {
+      const url = URL.createObjectURL(blob);
+      const a = new Audio(url);
+      a.onended = () => { URL.revokeObjectURL(url); resolve(); };
+      a.onerror = () => resolve();
+      currentAudio = a;
+      a.play().catch(() => resolve());
+    });
+  }
+
+  let currentAudio = null;
+
+  async function runDemo(){
     if(running) return;
     running = true; $('run').disabled = true;
     let remaining = START, i = 0;
     const ledger = $('ledger'), bar = $('bar'), bal = $('bal');
     ledger.innerHTML = ''; bar.style.width = '100%'; bal.textContent = START.toFixed(2);
-    const tick = () => {
-      if(i >= SCRIPT.length){ running = false; $('run').disabled = false; return; }
+
+    while(running && i < SCRIPT.length){
       if(remaining < COST){
         const d = document.createElement('div'); d.className = 'silent';
         d.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted - agent goes silent. ' + (SCRIPT.length - i) + ' line(s) unspoken.';
-        ledger.appendChild(d); running = false; $('run').disabled = false; return;
+        ledger.appendChild(d); break;
       }
-      remaining = +(remaining - COST).toFixed(2);
       const row = document.createElement('div'); row.className = 'lrow';
-      row.innerHTML = '<span class="t">' + SPK + '#' + (i+1) + '&nbsp; ' + SCRIPT[i] + '</span><span class="cost">-' + COST.toFixed(2) + '</span>';
+      row.innerHTML = '<span class="t">' + SPK + '#' + (i+1) + '&nbsp; ' + SCRIPT[i] + ' <span class="seed">settling on-chain…</span></span><span class="cost">-' + COST.toFixed(2) + '</span>';
       ledger.appendChild(row);
-      bar.style.width = (remaining / START * 100) + '%'; bal.textContent = remaining.toFixed(2);
-      i++; timer = setTimeout(tick, 900);
-    };
-    timer = setTimeout(tick, 260);
+      try{
+        const res = await fetch('/api/demo/speak', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ text: SCRIPT[i] })
+        });
+        if(!running) break;
+        if(!res.ok){
+          let msg = 'call failed (' + res.status + ')';
+          try{ msg = (await res.json()).error || msg; }catch(e){}
+          row.querySelector('.seed').textContent = msg;
+          break;
+        }
+        const tx = settleTx(res);
+        const blob = await res.blob();
+        remaining = +(remaining - COST).toFixed(2);
+        bar.style.width = (remaining / START * 100) + '%'; bal.textContent = remaining.toFixed(2);
+        const seed = row.querySelector('.seed');
+        if(tx){
+          seed.innerHTML = '<a href="https://testnet.cspr.live/transaction/' + tx + '" target="_blank" rel="noopener" style="color:var(--good)">settled ✓ tx ' + tx.slice(0,10) + '…</a>';
+        } else {
+          seed.textContent = 'settled ✓';
+        }
+        await playBlob(blob);
+        i++;
+      }catch(e){
+        row.querySelector('.seed').textContent = 'network error - stopped';
+        break;
+      }
+    }
+    running = false; $('run').disabled = false;
   }
 
   resetDemo();
