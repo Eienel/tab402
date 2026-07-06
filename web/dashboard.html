@@ -107,7 +107,7 @@
         <div class="kv"><span class="lbl">remaining</span> <span class="val" id="u-remaining">-</span></div>
         <div class="meter"><i id="u-bar" style="width:100%"></i></div>
       </div>
-      <div id="settlements"><div class="empty">Create a key to start tracking on-chain settlements.</div></div>
+      <div id="settlements"><div class="empty">Try the demo below, or create a key to track your own settlements.</div></div>
     </div>
   </div>
 
@@ -233,20 +233,34 @@ await pay(SERVER_URL, { method:'POST', body: JSON.stringify({ text }) });`;
         document.getElementById('playerwrap').style.display = 'block';
         out.textContent = 'Done - payment settled, audio ready.';
         loadFeed(); loadStats();
+        // settle is recorded a moment after the tx confirms; refresh again
+        setTimeout(() => { loadFeed(); loadStats(); }, 2500);
       }
     }catch(e){ out.textContent = 'Request failed - try again.'; }
     btn.disabled = false; btn.textContent = 'Speak it (pays on-chain)';
   }
 
+  function feedRow(s){
+    return '<div class="row"><a href="'+(s.explorerUrl||('https://testnet.cspr.live/transaction/'+s.transaction))+'" target="_blank">'+s.transaction.slice(0,12)+'…</a>'+
+      '<span>'+s.payer.replace(/^00/,'').slice(0,8)+'…</span>'+
+      '<span>'+new Date(s.ts).toLocaleTimeString()+'</span><span class="amt">-'+fmt(s.amount)+' X402</span></div>';
+  }
+
   async function loadFeed(){
     try{
       const f = await (await fetch('/api/feed')).json();
-      const el = document.getElementById('feed');
-      if(!f.settlements.length){ el.innerHTML = '<div class="empty">No settlements yet.</div>'; return; }
-      el.innerHTML = f.settlements.map(s =>
-        '<div class="row"><a href="'+s.explorerUrl+'" target="_blank">'+s.transaction.slice(0,12)+'…</a>'+
-        '<span>'+s.payer.replace(/^00/,'').slice(0,8)+'…</span>'+
-        '<span>'+new Date(s.ts).toLocaleTimeString()+'</span><span class="amt">-'+fmt(s.amount)+' X402</span></div>').join('');
+      const feedEl = document.getElementById('feed');
+      feedEl.innerHTML = f.settlements.length
+        ? f.settlements.map(feedRow).join('')
+        : '<div class="empty">No settlements yet.</div>';
+      // Mirror global settlements into the "Live settlements" card until the
+      // visitor provisions their own key (so the Try-it demo shows up there too).
+      if(!key){
+        const setEl = document.getElementById('settlements');
+        setEl.innerHTML = f.settlements.length
+          ? f.settlements.map(feedRow).join('')
+          : '<div class="empty">No settlements yet. Try the demo below, or create a key to track your own.</div>';
+      }
     }catch{}
   }
 
