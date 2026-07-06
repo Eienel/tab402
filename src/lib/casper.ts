@@ -4,8 +4,17 @@
 import { readFileSync } from "node:fs";
 import casperSdk from "casper-js-sdk";
 
-const { PrivateKey, KeyAlgorithm, RpcClient, HttpHandler, ContractCallBuilder, Args, CLValue, Key } =
-  casperSdk;
+const {
+  PrivateKey,
+  KeyAlgorithm,
+  RpcClient,
+  HttpHandler,
+  ContractCallBuilder,
+  Args,
+  CLValue,
+  Key,
+  EntityIdentifier,
+} = casperSdk;
 
 const rpcUrl = process.env.RPCURL_CASPER_CASPER_TEST || "https://node.testnet.casper.network/rpc";
 const chainName = (process.env.CAIP2_CHAIN_ID || "casper:casper-test").split(":")[1];
@@ -20,6 +29,43 @@ function rpc() {
 function deployerKey() {
   const algo = deployerAlgo === "secp256k1" ? KeyAlgorithm.SECP256K1 : KeyAlgorithm.ED25519;
   return PrivateKey.fromPem(readFileSync(deployerPemPath, "utf8"), algo);
+}
+
+// Pull the X402_package_hash named key out of a state_get_entity response.
+// We search the raw JSON to avoid typedjson quirks across SDK versions.
+export function extractPackageHash(raw: unknown): string {
+  const norm = (v: string) => v.replace(/^(hash-|contract-package-wasm|package-|entity-contract-)/g, "");
+  const scan = (arr: unknown): string | null => {
+    if (!Array.isArray(arr)) return null;
+    for (const item of arr as Array<{ name?: string; key?: unknown; value?: unknown }>) {
+      if (item?.name === PACKAGE_HASH_KEY) {
+        const k = item.key ?? item.value;
+        if (typeof k === "string") return k;
+        if (k && typeof k === "object") return String((k as { key?: string }).key ?? JSON.stringify(k));
+      }
+    }
+    return null;
+  };
+  const r = raw as { named_keys?: unknown; entity?: { named_keys?: unknown }; namedKeys?: unknown };
+  const found = scan(r?.named_keys) || scan(r?.entity?.named_keys) || scan(r?.namedKeys);
+  if (found) return norm(found);
+  // Fallback: regex the whole blob for the named key's value.
+  const s = JSON.stringify(raw);
+  const m =
+    s.match(/"X402_package_hash"[^}]*?"key"\s*:\s*"([^"]+)"/) ||
+    s.match(/"key"\s*:\s*"([^"]+)"[^}]*?"X402_package_hash"/);
+  return m ? norm(m[1]) : "";
+}
+
+// Read the deployer's currently-installed X402 token package hash on-chain.
+export async function readTokenPackageHash(): Promise<{ hash: string; raw: unknown }> {
+  const dep = deployerKey();
+  const client = rpc();
+  const res = (await client.getLatestEntity(
+    EntityIdentifier.fromPublicKey(dep.publicKey),
+  )) as { rawJSON?: unknown };
+  const raw = res?.rawJSON ?? res;
+  return { hash: extractPackageHash(raw), raw };
 }
 
 export interface AgentKey {

@@ -9,8 +9,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { config } from "dotenv";
 import casperSdk from "casper-js-sdk";
+import { extractPackageHash } from "../lib/casper.js";
 
-const { PrivateKey, KeyAlgorithm, RpcClient, HttpHandler, SessionBuilder, ContractCallBuilder, Args, CLValue, Key } = casperSdk;
+const { PrivateKey, KeyAlgorithm, RpcClient, HttpHandler, SessionBuilder, ContractCallBuilder, Args, CLValue, Key, EntityIdentifier } = casperSdk;
 
 config();
 
@@ -77,21 +78,21 @@ async function main() {
   console.log("✅ install transaction processed");
 
   // ---- 2. Read the package hash from the deployer's named keys -------------
-  const entity = await rpc.getLatestEntity({ publicKey: deployer.publicKey } as never).catch(() => null);
   let packageHash = "";
-  const namedKeys = (entity as never as { namedKeys?: { namedKeys?: Array<{ name: string; key: { toString(): string } }> } })?.namedKeys?.namedKeys;
-  if (Array.isArray(namedKeys)) {
-    const nk = namedKeys.find(k => k.name === PACKAGE_HASH_KEY);
-    if (nk) packageHash = nk.key.toString();
+  try {
+    const entity = (await rpc.getLatestEntity(
+      EntityIdentifier.fromPublicKey(deployer.publicKey),
+    )) as { rawJSON?: unknown };
+    packageHash = extractPackageHash(entity?.rawJSON ?? entity);
+  } catch (e) {
+    console.warn("getLatestEntity failed:", e instanceof Error ? e.message : e);
   }
   if (!packageHash) {
-    console.warn("⚠️  Could not auto-read package hash from entity. Full entity logged below — find the X402_package_hash value and set ASSET_PACKAGE manually.");
-    console.dir(entity, { depth: 6 });
+    console.warn("⚠️  Could not auto-read package hash. Set ASSET_PACKAGE manually from the install tx on cspr.live.");
   } else {
     console.log(`\n🏷️  Token package hash: ${packageHash}`);
-    const hashHex = packageHash.replace(/^(hash-|contract-package-wasm|package-)/g, "");
-    updateEnv("ASSET_PACKAGE", hashHex);
-    console.log(`   wrote ASSET_PACKAGE=${hashHex} to .env`);
+    updateEnv("ASSET_PACKAGE", packageHash);
+    console.log(`   wrote ASSET_PACKAGE=${packageHash} to .env`);
   }
 
   // ---- 3. Fund the agent with starting token balance ----------------------
@@ -114,9 +115,8 @@ async function main() {
   console.log("✅ agent funded\n");
 
   if (packageHash) {
-    const hashHex = packageHash.replace(/^(hash-|contract-package-wasm|package-)/g, "");
     console.log("========================================================");
-    console.log(`NEW ASSET_PACKAGE=${hashHex}`);
+    console.log(`NEW ASSET_PACKAGE=${packageHash}`);
     console.log("Set this as ASSET_PACKAGE (in .env or Fly secrets) and redeploy.");
     console.log("========================================================");
   }

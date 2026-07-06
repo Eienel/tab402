@@ -5,7 +5,7 @@ import { Router, Request, Response } from "express";
 import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
 import { readSettlements, type Settlement } from "../lib/ledger.js";
-import { newAgentKeypair, fundAccount } from "../lib/casper.js";
+import { newAgentKeypair, fundAccount, readTokenPackageHash } from "../lib/casper.js";
 
 const router = Router();
 
@@ -35,6 +35,21 @@ router.get("/admin/deploy-token", (req: Request, res: Response) => {
     message:
       "Token deploy started. Watch fly logs for a 'NEW ASSET_PACKAGE=...' line (takes 1-3 min).",
   });
+});
+
+// Read the already-installed token package hash (no gas, no deploy). Use this
+// after a deploy to fetch the ASSET_PACKAGE without re-installing.
+router.get("/admin/token-hash", async (req: Request, res: Response) => {
+  const secret = process.env.ADMIN_DEPLOY_SECRET;
+  if (!secret) return res.status(500).json({ error: "ADMIN_DEPLOY_SECRET not set" });
+  if (req.query.secret !== secret) return res.status(403).json({ error: "forbidden" });
+  try {
+    const { hash, raw } = await readTokenPackageHash();
+    if (!hash) return res.status(404).json({ error: "package hash not found", raw });
+    res.json({ ok: true, assetPackage: hash });
+  } catch (e) {
+    res.status(500).json({ error: e instanceof Error ? e.message : "failed" });
+  }
 });
 
 // In-memory store for provisioned keys (in production: use database)
