@@ -110,6 +110,28 @@
       <div id="settlements"><div class="empty">Create a key to start tracking on-chain settlements.</div></div>
     </div>
   </div>
+
+  <div class="grid" style="margin-top:20px;margin-bottom:40px">
+    <div class="card">
+      <h2>Try it — paid TTS, no wallet needed</h2>
+      <p class="hint" style="margin-top:0">Type a sentence. Our treasury key pays the x402 invoice on Casper, Deepgram speaks it, and you download the MP3. Watch the payment land in the live feed.</p>
+      <textarea id="say" maxlength="300" rows="3" placeholder="Hello. This sentence was paid for on-chain."
+        style="width:100%;background:#08080a;border:1px solid var(--line);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:14px;padding:12px;resize:vertical"></textarea>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" id="saybtn" onclick="demoSpeak()">Speak it (pays on-chain)</button>
+        <span class="hint" id="sayout"></span>
+      </div>
+      <div id="playerwrap" style="display:none;margin-top:14px">
+        <audio id="player" controls style="width:100%"></audio>
+        <div style="margin-top:10px"><a class="btn ghost" id="dl" download="tab402.mp3">Download MP3</a></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Live transaction feed <span class="pill">on-chain</span></h2>
+      <div id="feed"><div class="empty">No settlements yet.</div></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -192,7 +214,44 @@ await pay(SERVER_URL, { method:'POST', body: JSON.stringify({ text }) });`;
 
   function startPolling(){ refreshUsage(); if(poll) clearInterval(poll); poll = setInterval(refreshUsage, 4000); }
 
+  async function demoSpeak(){
+    const btn = document.getElementById('saybtn'), out = document.getElementById('sayout');
+    const text = document.getElementById('say').value.trim();
+    if(!text){ out.textContent = 'Type something first.'; return; }
+    btn.disabled = true; btn.textContent = 'Paying on-chain…'; out.textContent = 'Settling x402 payment on Casper, then synthesizing…';
+    try{
+      const r = await fetch('/api/demo/speak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+      if(!r.ok){
+        let msg = 'Request failed ('+r.status+')';
+        try{ msg = (await r.json()).error || msg; }catch{}
+        out.textContent = msg;
+      } else {
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        document.getElementById('player').src = url;
+        document.getElementById('dl').href = url;
+        document.getElementById('playerwrap').style.display = 'block';
+        out.textContent = 'Done — payment settled, audio ready.';
+        loadFeed(); loadStats();
+      }
+    }catch(e){ out.textContent = 'Request failed — try again.'; }
+    btn.disabled = false; btn.textContent = 'Speak it (pays on-chain)';
+  }
+
+  async function loadFeed(){
+    try{
+      const f = await (await fetch('/api/feed')).json();
+      const el = document.getElementById('feed');
+      if(!f.settlements.length){ el.innerHTML = '<div class="empty">No settlements yet.</div>'; return; }
+      el.innerHTML = f.settlements.map(s =>
+        '<div class="row"><a href="'+s.explorerUrl+'" target="_blank">'+s.transaction.slice(0,12)+'…</a>'+
+        '<span>'+s.payer.replace(/^00/,'').slice(0,8)+'…</span>'+
+        '<span>'+new Date(s.ts).toLocaleTimeString()+'</span><span class="amt">-'+fmt(s.amount)+' X402</span></div>').join('');
+    }catch{}
+  }
+
   loadStats(); setInterval(loadStats, 6000);
+  loadFeed(); setInterval(loadFeed, 4000);
 </script>
 </body>
 </html>

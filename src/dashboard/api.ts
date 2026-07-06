@@ -170,6 +170,29 @@ router.get("/usage/:accountHash", (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/feed
+ * Global live transaction feed — latest settlements across all accounts
+ */
+router.get("/feed", (_req: Request, res: Response) => {
+  try {
+    const settlements = readSettlements();
+    res.json({
+      count: settlements.length,
+      settlements: settlements.slice(0, 25).map((s: Settlement) => ({
+        payer: s.payer,
+        transaction: s.transaction,
+        amount: s.amount,
+        ts: s.ts,
+        explorerUrl: `https://testnet.cspr.live/transaction/${s.transaction}`,
+      })),
+    });
+  } catch (error) {
+    console.error("Feed error:", error);
+    res.status(500).json({ error: "Failed to fetch feed" });
+  }
+});
+
+/**
  * GET /api/health
  * Health check for dashboard API
  */
