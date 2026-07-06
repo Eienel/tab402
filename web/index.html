@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tab — spend-bounded API payments for autonomous agents</title>
+<title>Tab - spend-bounded API payments for autonomous agents</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Rye&display=swap" rel="stylesheet" />
@@ -90,7 +90,7 @@
   .h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;font-weight:600;margin:0 0 14px;max-width:18ch;line-height:1.1}
   .p{color:var(--muted);font-size:17px;max-width:60ch;line-height:1.65}
 
-  /* problem — asymmetric 2-col, no 3-card row */
+  /* problem - asymmetric 2-col, no 3-card row */
   .prob{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:40px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
   .prob .cell{padding:30px 30px;border-bottom:1px solid var(--line)}
   .prob .cell:nth-child(odd){border-right:1px solid var(--line)}
@@ -195,7 +195,7 @@
       <span class="eyebrow"><span class="pulse"></span> x402 · Casper testnet · live</span>
       <h1>Give your agent a budget<br>it <em>can't blow.</em></h1>
       <p class="sub">Autonomous agents hold crypto, but the world's APIs run on cards. Open a Tab,
-        fund it once, and your agent pays per request from an on-chain balance — with a hard
+        fund it once, and your agent pays per request from an on-chain balance - with a hard
         spending cap it physically cannot exceed.</p>
       <div class="cta">
         <a class="btn primary" href="/demo">
@@ -231,7 +231,7 @@ settle <span class="y">insufficient_balance</span>  <span class="y">agent goes s
     <p class="kicker">The gap</p>
     <h2 class="h2">x402 lets agents pay. Nothing lets you trust them with money.</h2>
     <p class="p">Pay-per-call settles the crypto-native services. It does nothing for the APIs that
-      only take a card — and nothing to stop an agent from draining your account overnight.</p>
+      only take a card - and nothing to stop an agent from draining your account overnight.</p>
     <div class="prob reveal">
       <div class="cell">
         <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Agents can't hold a card</h3>
@@ -258,12 +258,12 @@ settle <span class="y">insufficient_balance</span>  <span class="y">agent goes s
     <p class="kicker">How it works</p>
     <h2 class="h2">Four steps, one on-chain transaction per call.</h2>
     <p class="p">The agent never leaves its budget. Every fulfilled request is a real settlement on
-      Casper — and Zug's instant finality is what makes per-call settlement viable.</p>
+      Casper - and Zug's instant finality is what makes per-call settlement viable.</p>
     <div class="steps reveal">
       <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>It points at our endpoint instead of the provider, holding a Casper key and a token budget.</p></div>
       <div class="step"><div class="n">02</div><h4>402 + price</h4><p>The rail answers <span class="mono accent">402</span> with a per-call price in our CEP-18 token.</p></div>
       <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper in seconds.</p></div>
-      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API and returns the result — with an on-chain receipt.</p></div>
+      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API and returns the result - with an on-chain receipt.</p></div>
     </div>
   </div>
 </section>
@@ -273,13 +273,13 @@ settle <span class="y">insufficient_balance</span>  <span class="y">agent goes s
     <p class="kicker">Live demo</p>
     <h2 class="h2">Watch an agent hit the wall.</h2>
     <p class="p">Claude writes a script. The agent pays per line and goes silent the instant its
-      balance runs out. Overspend isn't discouraged — it's impossible. Pick a budget and run it yourself.</p>
+      balance runs out. Overspend isn't discouraged - it's impossible. Pick a budget and run it yourself.</p>
     <div class="demolink reveal">
       <div class="demolink-pre mono">
-        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">— 0.10 X402</span></span>
-        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">— 0.10 X402</span></span>
-        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">— 0.10 X402</span></span>
-        <span class="dl-row dl-stop">insufficient_balance — agent goes silent</span>
+        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">- 0.10 X402</span></span>
+        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">- 0.10 X402</span></span>
+        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">- 0.10 X402</span></span>
+        <span class="dl-row dl-stop">insufficient_balance - agent goes silent</span>
       </div>
       <div class="demolink-cta">
         <h3>A voice agent on a budget</h3>
@@ -302,7 +302,7 @@ settle <span class="y">insufficient_balance</span>  <span class="y">agent goes s
         <div class="big">~2s</div>
         <h4>Deterministic instant finality (Zug)</h4>
         <p>Per-call on-chain settlement is only viable with deterministic finality. On a probabilistic
-          chain you'd wait blocks per request — here the agent acts and knows it settled. Every API
+          chain you'd wait blocks per request - here the agent acts and knows it settled. Every API
           call becomes one real, final transaction.</p>
       </div>
       <div class="tile">
@@ -326,7 +326,7 @@ settle <span class="y">insufficient_balance</span>  <span class="y">agent goes s
     <h2 class="h2">A drop-in endpoint for any agent.</h2>
     <div class="integ">
       <p class="p">Point your agent's HTTP client at the rail and fund a Casper key. The x402 client
-        signs payments automatically — your code just calls the endpoint and gets the result back,
+        signs payments automatically - your code just calls the endpoint and gets the result back,
         bounded by a balance it can't exceed.</p>
       <div class="term">
         <div class="bar"><i></i><i></i><i></i><span>agent.ts</span></div>
@@ -360,7 +360,7 @@ writeFileSync(<span class="g">"line.mp3"</span>, <span class="r">await</span> re
 </footer>
 
 <script>
-  // scroll reveal (IntersectionObserver — no scroll listeners)
+  // scroll reveal (IntersectionObserver - no scroll listeners)
   const io = new IntersectionObserver((es)=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);} }), {threshold:.15});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tab — Live demo · a voice agent on a budget</title>
-<meta name="description" content="Watch an autonomous agent pay per line and go silent the instant its on-chain budget runs dry. Overspend isn't discouraged — it's impossible." />
+<title>Tab - Live demo · a voice agent on a budget</title>
+<meta name="description" content="Watch an autonomous agent pay per line and go silent the instant its on-chain budget runs dry. Overspend isn't discouraged - it's impossible." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Rye&display=swap" rel="stylesheet" />
@@ -138,9 +138,9 @@
 <div class="wrap">
   <header class="intro">
     <span class="kicker"><span class="pulse"></span> Live demo</span>
-    <h1>A voice agent on a budget —<br>and the wall it <em>can't cross.</em></h1>
+    <h1>A voice agent on a budget -<br>and the wall it <em>can't cross.</em></h1>
     <p class="sub">Claude writes a script. The agent pays for every line from its own on-chain balance and goes
-      silent the instant the money runs out. Pick a budget and run it: overspend isn't discouraged here — it's impossible.</p>
+      silent the instant the money runs out. Pick a budget and run it: overspend isn't discouraged here - it's impossible.</p>
   </header>
 
   <div class="stage">
@@ -180,7 +180,7 @@
       <div class="step"><div class="n">04</div><h4>Silence at zero</h4><p>When the balance can't cover the next line, the call simply fails. No overdraft, no surprise bill.</p></div>
     </div>
     <p class="realnote">This page simulates the budget logic so you can see the wall without funding a wallet. The real rail
-      does exactly this on Casper testnet — every line becomes a final on-chain settlement. See it for real in the
+      does exactly this on Casper testnet - every line becomes a final on-chain settlement. See it for real in the
       <a href="/dashboard">developer dashboard</a> or read the <a href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">integration on GitHub</a>.</p>
   </section>
 </div>
@@ -237,7 +237,7 @@
       if(i >= SCRIPT.length){ running = false; $('run').disabled = false; return; }
       if(remaining < COST){
         const d = document.createElement('div'); d.className = 'silent';
-        d.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted — agent goes silent. ' + (SCRIPT.length - i) + ' line(s) unspoken.';
+        d.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted - agent goes silent. ' + (SCRIPT.length - i) + ' line(s) unspoken.';
         ledger.appendChild(d); running = false; $('run').disabled = false; return;
       }
       remaining = +(remaining - COST).toFixed(2);
