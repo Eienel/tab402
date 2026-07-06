@@ -96,7 +96,11 @@
           <button class="btn" id="fundbtn" onclick="fund()">Fund 0.5 X402</button>
         </div>
         <div id="fundresult" class="hint"></div>
-        <h2 style="margin-top:22px">2 · Point your agent here</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px;gap:10px">
+          <h2 style="margin:0">2 · Use it in your agent</h2>
+          <button class="btn ghost" id="copybtn" onclick="copySnippet()" style="padding:6px 12px;font-size:12.5px">Copy</button>
+        </div>
+        <p class="hint" style="margin-top:6px">Point your agent at the gateway with the key you downloaded. It signs and pays each call automatically, from this account's on-chain balance.</p>
         <pre id="snippet"></pre>
       </div>
     </div>
@@ -138,6 +142,37 @@
   const fmt = m => (Number(m)/1e9).toFixed(2);
   let key = null, funded = 0, ceiling = 0.5, poll = null;
 
+  const SNIPPET =
+`// 1. Save the key you downloaded above as agent.pem
+// 2. npm i @x402/fetch @make-software/casper-x402 casper-js-sdk
+// 3. Fund this account with X402 (use the "Fund" button above)
+
+import { x402Client, wrapFetchWithPayment } from "@x402/fetch";
+import { createClientCasperSigner } from "@make-software/casper-x402";
+import { ExactCasperScheme } from "@make-software/casper-x402/exact/client";
+import casperSdk from "casper-js-sdk";
+
+const signer = await createClientCasperSigner("./agent.pem", casperSdk.KeyAlgorithm.ED25519);
+const client = new x402Client((_v, o) => o.find(x => x.network.startsWith("casper:")) || o[0])
+  .register("casper:*", new ExactCasperScheme(signer));
+const pay = wrapFetchWithPayment(fetch, client);
+
+// Your agent pays per call automatically when it hits HTTP 402:
+const res = await pay("${location.origin}/v1/speak", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ text: "Hello, paid on Casper." }),
+});
+const audio = Buffer.from(await res.arrayBuffer()); // your MP3, paid on-chain`;
+
+  function copySnippet(){
+    navigator.clipboard.writeText(SNIPPET).then(() => {
+      const b = document.getElementById('copybtn');
+      const t = b.textContent; b.textContent = 'Copied!';
+      setTimeout(() => { b.textContent = t; }, 1400);
+    }).catch(() => {});
+  }
+
   async function loadStats(){
     try{
       const s = await (await fetch('/api/stats')).json();
@@ -155,15 +190,7 @@
       document.getElementById('k-pub').textContent = key.publicKeyHex;
       document.getElementById('k-acct').textContent = key.accountHash;
       document.getElementById('k-payto').textContent = key.payTo;
-      document.getElementById('snippet').textContent =
-`# save the downloaded key as agent.pem, then:
-SERVER_URL=https://your-tab-gateway/v1/speak
-CLIENT_PRIVATE_KEY_PATH=./agent.pem
-CLIENT_KEY_ALGO=ed25519
-
-# your agent signs x402 automatically:
-const pay = wrapFetchWithPayment(fetch, client);
-await pay(SERVER_URL, { method:'POST', body: JSON.stringify({ text }) });`;
+      document.getElementById('snippet').textContent = SNIPPET;
       document.getElementById('keydetails').style.display='block';
       document.getElementById('usagehead').style.display='block';
       document.getElementById('livepill').style.display='inline';
@@ -218,14 +245,20 @@ await pay(SERVER_URL, { method:'POST', body: JSON.stringify({ text }) });`;
     const btn = document.getElementById('saybtn'), out = document.getElementById('sayout');
     const text = document.getElementById('say').value.trim();
     if(!text){ out.textContent = 'Type something first.'; return; }
-    btn.disabled = true; btn.textContent = 'Paying on-chain…'; out.textContent = 'Settling x402 payment on Casper, then synthesizing…';
+    btn.disabled = true; btn.textContent = 'Working…';
+    // staged status so the on-chain settlement wait reads as progress
+    const stages = ['Signing x402 authorization…','Settling payment on Casper (~10-20s)…','Confirming settlement on-chain…'];
+    let si = 0; out.textContent = stages[0];
+    const stageTimer = setInterval(() => { si = Math.min(si+1, stages.length-1); out.textContent = stages[si]; }, 4000);
     try{
       const r = await fetch('/api/demo/speak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+      clearInterval(stageTimer);
       if(!r.ok){
         let msg = 'Request failed ('+r.status+')';
         try{ msg = (await r.json()).error || msg; }catch{}
         out.textContent = msg;
       } else {
+        out.textContent = 'Synthesizing audio…';
         const blob = await r.blob();
         const url = URL.createObjectURL(blob);
         document.getElementById('player').src = url;
@@ -236,7 +269,7 @@ await pay(SERVER_URL, { method:'POST', body: JSON.stringify({ text }) });`;
         // settle is recorded a moment after the tx confirms; refresh again
         setTimeout(() => { loadFeed(); loadStats(); }, 2500);
       }
-    }catch(e){ out.textContent = 'Request failed - try again.'; }
+    }catch(e){ clearInterval(stageTimer); out.textContent = 'Request failed - try again.'; }
     btn.disabled = false; btn.textContent = 'Speak it (pays on-chain)';
   }
 

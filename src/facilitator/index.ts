@@ -56,7 +56,32 @@ async function buildSigner(key: NetworkKey): Promise<FacilitatorCasperSigner> {
       ? casperSdk.KeyAlgorithm.SECP256K1
       : casperSdk.KeyAlgorithm.ED25519;
   const privateKey = casperSdk.PrivateKey.fromPem(key.pem, algorithm);
-  return toFacilitatorCasperSigner(privateKey, key.rpcUrl);
+  const base = await toFacilitatorCasperSigner(privateKey, key.rpcUrl);
+
+  // The default signer polls the settlement tx every 3s, so it can return up to
+  // ~3s after the tx actually confirmed. Poll every 1s to shave that off - same
+  // logic, tighter interval. (The bulk of the wait is Casper confirming the tx.)
+  const rpcClient = new casperSdk.RpcClient(new casperSdk.HttpHandler(key.rpcUrl));
+  base.waitForTransaction = async (_network, transactionHash: string) => {
+    const start = Date.now();
+    const timeoutMs = 60000;
+    const pollIntervalMs = 1000;
+    while (Date.now() - start < timeoutMs) {
+      const info = (await rpcClient.getTransactionByTransactionHash(transactionHash)) as {
+        executionInfo?: { blockHeight?: number; executionResult?: { errorMessage?: string } };
+      };
+      const execInfo = info.executionInfo;
+      if (execInfo && execInfo.blockHeight !== 0 && execInfo.executionResult) {
+        if (execInfo.executionResult.errorMessage) {
+          throw new Error(`transaction execution failed: ${execInfo.executionResult.errorMessage}`);
+        }
+        return;
+      }
+      await new Promise(r => setTimeout(r, pollIntervalMs));
+    }
+    throw new Error(`Timed out waiting for transaction ${transactionHash}`);
+  };
+  return base;
 }
 
 for (const network of cfg.networks) {
