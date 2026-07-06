@@ -23,7 +23,12 @@ dotenv.config();
 const cfg = parseEnv();
 
 const app = express();
-app.use(express.json());
+// Signed Casper transactions in settle payloads can exceed express's 100kb default
+app.use(express.json({ limit: "5mb" }));
+app.use((req, _res, next) => {
+  console.log(`→ ${req.method} ${req.url}`);
+  next();
+});
 
 const facilitator = new x402Facilitator()
   .onAfterVerify(async () => console.log("✅ payment verified"))
@@ -92,6 +97,7 @@ app.post("/settle", async (req, res) => {
       paymentPayload as PaymentPayload,
       paymentRequirements as PaymentRequirements,
     );
+    console.log("settle result:", JSON.stringify(response));
     res.json(response);
   } catch (error) {
     console.error("Settle error:", error);

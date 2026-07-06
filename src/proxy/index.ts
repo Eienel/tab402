@@ -168,7 +168,9 @@ app.post("/api/demo/speak", async (req, res) => {
     }
     if (!audioRes.ok) {
       const detail = await audioRes.text();
-      console.error("Demo speak failed", audioRes.status, detail);
+      const hdrs: Record<string, string> = {};
+      audioRes.headers.forEach((v, k) => (hdrs[k] = v));
+      console.error("Demo speak failed", audioRes.status, detail, JSON.stringify(hdrs));
       const hint =
         audioRes.status === 402
           ? "payment rejected - check treasury X402/CSPR balance and facilitator logs"
