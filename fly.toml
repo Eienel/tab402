@@ -1,6 +1,13 @@
 app = "tab402"
 primary_region = "iad"
 
+# Persistent volume for the settlement ledger (data/ledger.jsonl) so the
+# live feed survives machine restarts. Create once before deploying:
+#   fly volumes create tab402_data --region iad --size 1
+[mounts]
+  source = "tab402_data"
+  destination = "/app/data"
+
 [http_service]
   internal_port = 4021
   force_https = true
