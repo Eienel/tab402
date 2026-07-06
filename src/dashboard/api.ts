@@ -3,8 +3,8 @@
 
 import { Router, Request, Response } from "express";
 import { randomBytes } from "node:crypto";
-import casperSdk from "casper-js-sdk";
 import { readSettlements, type Settlement } from "../lib/ledger.js";
+import { newAgentKeypair, fundAccount } from "../lib/casper.js";
 
 const router = Router();
 
@@ -55,20 +55,8 @@ router.get("/stats", (_req: Request, res: Response) => {
  */
 router.post("/provision", (_req: Request, res: Response) => {
   try {
-    // Generate new ED25519 key pair
-    // Use PrivateKey.generate() instead of fromRandomBytes
-    const privateKey = casperSdk.PrivateKey.generate(
-      casperSdk.KeyAlgorithm.ED25519
-    );
-
-    const publicKey = privateKey.publicKey;
-    const publicKeyHex = publicKey.toHex();
-
-    // Derive Casper account hash from public key
-    const accountHash = publicKey.toAccountHash();
-
-    // Export PEM for download
-    const pem = privateKey.toPem();
+    const kp = newAgentKeypair();
+    const { publicKeyHex, accountHash, pem } = kp;
 
     // Generate random API key for this provisioning
     const apiKey = randomBytes(32).toString("hex");
@@ -118,27 +106,19 @@ router.post("/fund", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing account or amount" });
     }
 
-    // In production: call facilitator's /settle endpoint to transfer tokens
-    // For now, return mock success
-    const mockTransaction = `${randomBytes(32).toString("hex")}`;
-
     console.log(
       `💰 Fund request: ${amount} motes to ${account.slice(0, 20)}...`
     );
 
-    // TODO: Integrate with actual facilitator settlement
-    // const facilitatorResponse = await fetch(`${FACILITATOR_URL}/settle`, {
-    //   method: "POST",
-    //   body: JSON.stringify({ account, amount })
-    // });
+    const transaction = await fundAccount(account, amount);
 
     res.json({
       ok: true,
-      transaction: mockTransaction,
+      transaction,
       amount,
       account: account.slice(0, 20) + "...",
       network: process.env.CAIP2_CHAIN_ID || "casper:casper-test",
-      explorerUrl: `https://testnet.cspr.live/transaction/${mockTransaction}`,
+      explorerUrl: `https://testnet.cspr.live/transaction/${transaction}`,
     });
   } catch (error) {
     console.error("Fund error:", error);

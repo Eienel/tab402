@@ -10,6 +10,8 @@ import { paymentMiddleware, x402ResourceServer } from "@x402/express";
 import { ExactCasperScheme } from "@make-software/casper-x402/exact/server";
 import { FacilitatorConfig, HTTPFacilitatorClient } from "@x402/core/server";
 import { AssetAmount, Network } from "@x402/core/types";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import dashboardApi from "../dashboard/api.js";
 
 config();
@@ -102,6 +104,20 @@ app.use(express.json());
 // ---- Mount dashboard API routes before payment middleware ----
 // These are public, developer-facing endpoints (no payment required)
 app.use("/api", dashboardApi);
+
+// ---- Frontend pages (served from web/, no payment required) ----
+const WEB_DIR = resolve(process.cwd(), "web");
+const page = (file: string) => (_req: express.Request, res: express.Response) => {
+  try {
+    res.type("html").send(readFileSync(resolve(WEB_DIR, file), "utf8"));
+  } catch (e) {
+    console.error(`Failed to serve ${file}:`, e);
+    res.status(500).send("Page unavailable");
+  }
+};
+app.get("/", page("index.html"));
+app.get("/dashboard", page("dashboard.html"));
+app.get("/demo", page("demo.html"));
 
 if (cfg.devBypass) {
   console.warn("⚠️  DEV_BYPASS_PAYMENT=true — x402 paywall DISABLED. Dev only; no on-chain payment.");
