@@ -231,10 +231,11 @@
   // Pull the on-chain tx hash out of the x402 PAYMENT-RESPONSE header (base64 JSON).
   function settleTx(res){
     try{
-      const h = res.headers.get('PAYMENT-RESPONSE');
+      const h = res.headers.get('PAYMENT-RESPONSE') || res.headers.get('X-PAYMENT-RESPONSE');
       if(!h) return null;
       const j = JSON.parse(atob(h));
-      return j.transaction || j.txHash || (j.details && j.details.transaction) || null;
+      return j.transaction || j.txHash || (j.details && j.details.transaction) ||
+        (j.payload && j.payload.transaction) || null;
     }catch(e){ return null; }
   }
 
@@ -280,12 +281,15 @@
           break;
         }
         const tx = settleTx(res);
+        const bypassed = res.headers.get('X-DEMO-MODE') === 'payment-bypassed';
         const blob = await res.blob();
         remaining = +(remaining - COST).toFixed(2);
         bar.style.width = (remaining / START * 100) + '%'; bal.textContent = remaining.toFixed(2);
         const seed = row.querySelector('.seed');
         if(tx){
           seed.innerHTML = '<a href="https://testnet.cspr.live/transaction/' + tx + '" target="_blank" rel="noopener" style="color:var(--good)">settled ✓ tx ' + tx.slice(0,10) + '…</a>';
+        } else if(bypassed){
+          seed.innerHTML = '<span style="color:var(--warn)">dev mode - payment bypassed, no on-chain settlement</span>';
         } else {
           seed.textContent = 'settled ✓';
         }

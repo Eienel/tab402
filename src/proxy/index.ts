@@ -99,7 +99,7 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Accept", "Authorization", "Content-Type", "Origin", "Payment-Signature"],
-    exposedHeaders: ["PAYMENT-REQUIRED", "PAYMENT-RESPONSE"],
+    exposedHeaders: ["PAYMENT-REQUIRED", "PAYMENT-RESPONSE", "X-PAYMENT-RESPONSE", "X-DEMO-MODE"],
     maxAge: 24 * 60 * 60,
   }),
 );
@@ -157,6 +157,7 @@ app.post("/api/demo/speak", async (req, res) => {
   try {
     let audioRes: Response;
     if (cfg.devBypass) {
+      res.set("X-DEMO-MODE", "payment-bypassed");
       audioRes = await deepgramSpeak(text);
     } else {
       const pay = await getDemoFetch();
@@ -171,7 +172,8 @@ app.post("/api/demo/speak", async (req, res) => {
       console.error("Demo speak failed", audioRes.status, detail);
       return res.status(502).json({ error: "demo_speak_failed", status: audioRes.status, detail });
     }
-    const settle = audioRes.headers.get("PAYMENT-RESPONSE");
+    const settle =
+      audioRes.headers.get("PAYMENT-RESPONSE") || audioRes.headers.get("X-PAYMENT-RESPONSE");
     if (settle) res.set("PAYMENT-RESPONSE", settle);
     const audio = Buffer.from(await audioRes.arrayBuffer());
     res.set("Content-Type", audioRes.headers.get("content-type") || "audio/mpeg");
