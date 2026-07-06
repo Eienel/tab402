@@ -1,7 +1,7 @@
 # Tab
 
 > Your agent's running tab, on-chain. Open a Tab, fund it once, and your agent pays
-> per call over x402 — capped by a balance it can't exceed.
+> per call over x402 - capped by a balance it can't exceed.
 
 A crypto-funded, **spend-bounded** API payment rail for autonomous agents, built on
 [Casper](https://casper.network) x402 micropayments.
@@ -17,10 +17,10 @@ An agent paid for a real Deepgram TTS call by settling in our own CEP-18 token o
 | x402 settlement tx | [`8971289990…1bb255c`](https://testnet.cspr.live/transaction/8971289990c8bcf515516bb8fc65e22e1deab3cf4c56a98c10cccf1521bb255c) |
 
 The agent signed an x402 authorization, the facilitator settled it on-chain, and the rail
-returned real spoken audio — paid per call, capped by an on-chain balance.
+returned real spoken audio - paid per call, capped by an on-chain balance.
 
 Agents hold a crypto budget but the world's APIs run on cards. This rail lets an
-agent pay for a real API **per request** from an on-chain balance — and enforces a
+agent pay for a real API **per request** from an on-chain balance - and enforces a
 hard spending cap the agent physically cannot exceed.
 
 The reference integration gates **Deepgram text-to-speech** behind an x402 paywall:
@@ -39,7 +39,7 @@ proxy ──(paid)──▶ Deepgram TTS ──audio──▶ agent
 |---|---|---|---|
 | Facilitator | `src/facilitator` | 4022 | Verifies signatures, settles CEP-18 transfers on-chain (pays gas) |
 | Proxy (rail) | `src/proxy` | 4021 | x402 paywall in front of Deepgram TTS |
-| Agent | `src/agent` | — | Holds a WCSPR budget; pays per call; budget = hard cap |
+| Agent | `src/agent` | - | Holds a WCSPR budget; pays per call; budget = hard cap |
 
 ## Setup
 
@@ -65,6 +65,6 @@ On success the agent writes `out.mp3` and the facilitator logs a settled on-chai
 
 - [x] Spine: x402-gated proxy → Deepgram, facilitator, paying agent (this repo)
 - [ ] Website + developer onboarding (get API key, load on-chain balance)
-- [ ] Hard-cap budget-escrow contract (Odra) — cumulative ceiling, per-merchant sub-limits
+- [ ] Hard-cap budget-escrow contract (Odra) - cumulative ceiling, per-merchant sub-limits
 
 Built for the Casper Agentic Buildathon 2026.
