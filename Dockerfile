@@ -47,4 +47,4 @@ ENTRYPOINT ["dumb-init", "--"]
 
 # Start the facilitator, wait until it answers, then start the proxy —
 # the proxy's x402 init dies if the facilitator isn't up yet
-CMD ["sh", "-c", "npm run facilitator 2>&1 | sed -u 's/^/[facilitator] /' & i=0; until wget -qO- http://127.0.0.1:4022/supported >/dev/null 2>&1; do i=$((i+1)); [ $i -ge 60 ] && echo 'facilitator never came up' && exit 1; sleep 1; done; npm run proxy"]
+CMD ["sh", "-c", "npm run facilitator 2>&1 & i=0; until wget -qO- http://127.0.0.1:4022/supported >/dev/null 2>&1; do i=$((i+1)); [ $i -ge 60 ] && echo 'facilitator never came up' && exit 1; sleep 1; done; npm run proxy"]
