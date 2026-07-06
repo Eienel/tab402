@@ -37,7 +37,7 @@ interface Env {
 
 function parseEnv(): Env {
   // DEV-ONLY: skip the x402 paywall to test the Deepgram + agent loop without
-  // a funded chain. Never enable in the real demo — it removes the on-chain part.
+  // a funded chain. Never enable in the real demo - it removes the on-chain part.
   const devBypass = process.env.DEV_BYPASS_PAYMENT === "true";
   const required = (key: string): string => {
     const v = process.env[key];
@@ -129,7 +129,7 @@ app.get("/demo", page("demo.html"));
 const DEMO_KEY_PATH = process.env.DEMO_AGENT_KEY_PATH || "./facilitator.pem";
 const DEMO_MAX_CHARS = parseInt(process.env.DEMO_MAX_CHARS || "300", 10);
 
-// Build a fresh payment client per request — reusing one across calls can
+// Build a fresh payment client per request - reusing one across calls can
 // carry stale scheme state into the next payment authorization.
 async function getDemoFetch(): Promise<typeof fetch> {
   const selector = (_v: number, options: PaymentRequirements[]): PaymentRequirements =>
@@ -150,7 +150,7 @@ app.post("/api/demo/speak", async (req, res) => {
   if (text.length > DEMO_MAX_CHARS)
     return res.status(400).json({ error: `Demo text is capped at ${DEMO_MAX_CHARS} characters.` });
   if (demoInFlight >= 3)
-    return res.status(429).json({ error: "Demo is busy — try again in a few seconds." });
+    return res.status(429).json({ error: "Demo is busy - try again in a few seconds." });
 
   demoInFlight++;
   try {
@@ -196,7 +196,7 @@ app.post("/api/demo/speak", async (req, res) => {
 });
 
 if (cfg.devBypass) {
-  console.warn("⚠️  DEV_BYPASS_PAYMENT=true — x402 paywall DISABLED. Dev only; no on-chain payment.");
+  console.warn("⚠️  DEV_BYPASS_PAYMENT=true - x402 paywall DISABLED. Dev only; no on-chain payment.");
 } else {
   app.use(
     paymentMiddleware(
@@ -219,7 +219,7 @@ if (cfg.devBypass) {
   );
 }
 
-// Call Deepgram with retries — this network is flaky and Node's hard 10s
+// Call Deepgram with retries - this network is flaky and Node's hard 10s
 // connect timeout can turn a slow connect into a failure. Retry punches through.
 async function deepgramSpeak(text: string, attempts = 5): Promise<Response> {
   let lastErr: unknown;
@@ -234,7 +234,7 @@ async function deepgramSpeak(text: string, attempts = 5): Promise<Response> {
     } catch (e) {
       lastErr = e;
       const code = (e as { cause?: { code?: string } })?.cause?.code || (e as Error)?.message;
-      console.warn(`  deepgram attempt ${i + 1}/${attempts} failed (${code}) — retrying`);
+      console.warn(`  deepgram attempt ${i + 1}/${attempts} failed (${code}) - retrying`);
       await new Promise(r => setTimeout(r, 1500));
     }
   }

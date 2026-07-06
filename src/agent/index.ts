@@ -1,6 +1,6 @@
 // The agent: holds a Casper testnet key + a WCSPR budget. It calls the rail,
 // gets a 402, signs the EIP-712 payment authorization, replays, and saves the
-// returned audio. Its budget is its hard cap — when WCSPR runs out, calls fail.
+// returned audio. Its budget is its hard cap - when WCSPR runs out, calls fail.
 // Adapted from make-software/casper-x402 examples/client.
 
 import { writeFileSync } from "node:fs";

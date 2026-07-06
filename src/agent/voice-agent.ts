@@ -2,7 +2,7 @@
 //
 // 1. Claude (the brain) writes a short script about a topic.
 // 2. For each line, the agent pays the rail per call and gets back audio.
-// 3. Its budget is a hard cap — when it runs out, the agent goes SILENT
+// 3. Its budget is a hard cap - when it runs out, the agent goes SILENT
 //    mid-script. No overspend is possible.
 //
 // Live mode  (default): pays via x402; the cap is the agent's on-chain balance.
@@ -35,7 +35,7 @@ const fmt = (m: bigint) => `${(Number(m) / 1e9).toFixed(2)} ${process.env.ASSET_
 async function writeScript(lineBudget: number): Promise<string[]> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
-    console.log("🧠 (no ANTHROPIC_API_KEY — using built-in script)");
+    console.log("🧠 (no ANTHROPIC_API_KEY - using built-in script)");
     return [
       "I am an autonomous agent, and I hold my own money on Casper.",
       "Every sentence I speak, I pay for myself, per request.",
@@ -82,7 +82,7 @@ async function makeFetch(): Promise<typeof fetch> {
 }
 
 async function main() {
-  console.log(`\n🎙️  Voice agent starting — budget ${fmt(remaining)}, ${fmt(costMotes)}/line`);
+  console.log(`\n🎙️  Voice agent starting - budget ${fmt(remaining)}, ${fmt(costMotes)}/line`);
   console.log(`    mode: ${devBypass ? "DEV (paywall bypassed)" : "LIVE (x402 on-chain)"}\n`);
 
   const maxLines = Number(remaining / costMotes);
@@ -94,7 +94,7 @@ async function main() {
   for (let i = 0; i < script.length; i++) {
     const line = script[i];
     if (remaining < costMotes) {
-      console.log(`\n🛑 Budget exhausted. The agent goes SILENT — ${script.length - i} line(s) left unspoken.`);
+      console.log(`\n🛑 Budget exhausted. The agent goes SILENT - ${script.length - i} line(s) left unspoken.`);
       console.log(`   "${line}" ...never voiced.`);
       break;
     }
@@ -105,7 +105,7 @@ async function main() {
     });
     if (!res.ok) {
       const body = await res.text();
-      console.log(`\n🛑 Payment/fulfillment failed (${res.status}) — agent stops. ${body.slice(0, 120)}`);
+      console.log(`\n🛑 Payment/fulfillment failed (${res.status}) - agent stops. ${body.slice(0, 120)}`);
       break;
     }
     const audio = Buffer.from(await res.arrayBuffer());

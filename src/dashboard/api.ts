@@ -215,7 +215,7 @@ router.get("/usage/:accountHash", (req: Request, res: Response) => {
 
 /**
  * GET /api/feed
- * Global live transaction feed — latest settlements across all accounts
+ * Global live transaction feed - latest settlements across all accounts
  */
 router.get("/feed", (_req: Request, res: Response) => {
   try {
