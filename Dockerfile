@@ -35,6 +35,8 @@ COPY --from=builder /app/web ./web
 # hand-set platform secrets (Fly secrets still override .env values)
 COPY --from=builder /app/.env ./.env
 COPY --from=builder /app/facilitator.pem ./facilitator.pem
+# Token contract wasm - needed only by `npm run deploy-token`
+COPY --from=builder /app/assets ./assets
 
 # Create data directory for ledger
 RUN mkdir -p data

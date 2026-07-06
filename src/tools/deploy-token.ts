@@ -112,6 +112,14 @@ async function main() {
   await rpc.putTransaction(transferTx);
   await rpc.waitForTransaction(transferTx, 120000);
   console.log("✅ agent funded\n");
+
+  if (packageHash) {
+    const hashHex = packageHash.replace(/^(hash-|contract-package-wasm|package-)/g, "");
+    console.log("========================================================");
+    console.log(`NEW ASSET_PACKAGE=${hashHex}`);
+    console.log("Set this as ASSET_PACKAGE (in .env or Fly secrets) and redeploy.");
+    console.log("========================================================");
+  }
   console.log("Done. Next: npm run facilitator | npm run proxy | npm run agent");
 }
 
