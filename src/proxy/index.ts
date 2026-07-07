@@ -122,6 +122,9 @@ const page = (file: string) => (_req: express.Request, res: express.Response) =>
 app.get("/", page("index.html"));
 app.get("/dashboard", page("dashboard.html"));
 app.get("/demo", page("demo.html"));
+// Static assets (logo/favicon) from web/, public. After the page routes so it
+// only serves extra files; before the paywall so it's not payment-gated.
+app.use(express.static(WEB_DIR));
 
 // ---- House-paid demo: visitor types a sentence, the treasury key pays the
 // x402 invoice on-chain, and the MP3 comes back for download. This is the
