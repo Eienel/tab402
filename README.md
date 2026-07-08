@@ -64,7 +64,7 @@ On success the agent writes `out.mp3` and the facilitator logs a settled on-chai
 ## Status
 
 - [x] Spine: x402-gated proxy → Deepgram, facilitator, paying agent (this repo)
-- [ ] Website + developer onboarding (get API key, load on-chain balance)
-- [ ] Hard-cap budget-escrow contract (Odra) - cumulative ceiling, per-merchant sub-limits
+- [x] Website + developer onboarding (get API key, load on-chain balance)
+- [x] Hard-cap budget-escrow contract (Odra) - cumulative ceiling, per-merchant sub-limits
 
 Built for the Casper Agentic Buildathon 2026.
