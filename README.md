@@ -44,7 +44,13 @@ Every call is a final on-chain settlement. The payment either lands on Casper or
 | Network | `casper:casper-test` |
 | CEP-18 x402 token package hash | `50ec5690bde5e72f5152cb5154119eb706961e376b19050534a95a13ead8baaf` |
 
-Live settlement transactions are visible in the dashboard's "Live transaction feed" at https://tab402.fly.dev/dashboard. Each row links to the transaction on `testnet.cspr.live`, so you can confirm that a payment for an API call is a real CEP-18 transfer on Casper.
+Sample Testnet transaction:
+
+| Transaction | What it is |
+|---|---|
+| [`2458f77b...e774b4`](https://testnet.cspr.live/transaction/2458f77bcd56ae960c02d0dfba616c63f3008c7ee7e87bcfd861c4da87e774b4) | An x402 settlement: a CEP-18 X402 transfer that paid for one text-to-speech API call through the rail |
+
+Live settlement transactions are also visible in the dashboard's "Live transaction feed" at https://tab402.fly.dev/dashboard. Each row links to the transaction on `testnet.cspr.live`, so you can confirm that a payment for an API call is a real CEP-18 transfer on Casper.
 
 ## Components
 
