@@ -16,7 +16,9 @@ import { ExactCasperScheme as ExactCasperClientScheme } from "@make-software/cas
 import casperSdk from "casper-js-sdk";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { AsyncLocalStorage } from "node:async_hooks";
 import dashboardApi from "../dashboard/api.js";
+import { estimateForRoute } from "./pricing.js";
 
 config();
 
@@ -81,16 +83,23 @@ if (cfg.facilitatorAPIKey) {
 }
 const facilitatorClient = new HTTPFacilitatorClient(facilitatorConfig);
 
-// ---- Casper "exact" scheme: charge PRICE_MOTES of WCSPR per call -------------
+// ---- Casper "exact" scheme: charge a per-request price in our CEP-18 ---------
 const assetAmount: AssetAmount = {
   asset: assetPackage,
   amount: cfg.priceMotes,
   extra: { name: cfg.assetName, symbol: cfg.assetSymbol, version: "1", decimals: "9" },
 };
 
+// The price is computed per request (see the pricing middleware below) and
+// carried here through AsyncLocalStorage, so the money parser settles the
+// amount that matches actual usage. Falls back to the flat PRICE_MOTES.
+const priceStore = new AsyncLocalStorage<string>();
+
 const casperScheme = new ExactCasperScheme()
   .registerAsset(chainID, assetPackage, 9)
-  .registerMoneyParser(() => Promise.resolve(assetAmount));
+  .registerMoneyParser(() =>
+    Promise.resolve({ ...assetAmount, amount: priceStore.getStore() ?? cfg.priceMotes }),
+  );
 
 // ---- App --------------------------------------------------------------------
 const app = express();
@@ -99,7 +108,15 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Accept", "Authorization", "Content-Type", "Origin", "Payment-Signature"],
-    exposedHeaders: ["PAYMENT-REQUIRED", "PAYMENT-RESPONSE", "X-PAYMENT-RESPONSE", "X-DEMO-MODE"],
+    exposedHeaders: [
+      "PAYMENT-REQUIRED",
+      "PAYMENT-RESPONSE",
+      "X-PAYMENT-RESPONSE",
+      "X-DEMO-MODE",
+      "X-Tab-Price-Motes",
+      "X-Tab-Price-X402",
+      "X-Tab-Price-Basis",
+    ],
     maxAge: 24 * 60 * 60,
   }),
 );
@@ -198,6 +215,29 @@ app.post("/api/demo/speak", async (req, res) => {
   }
 });
 
+// ---- Dynamic pricing --------------------------------------------------------
+// Public quote endpoint: what would this call cost? Lets the agent (or the demo
+// UI) show the price before paying. No payment required.
+app.get("/v1/quote", (req, res) => {
+  const quote = estimateForRoute("POST /v1/speak", { text: String(req.query.text ?? "") });
+  res.json({ asset: cfg.assetSymbol, decimals: 9, ...quote });
+});
+
+// Price each POST /v1/speak from its actual cost driver and hand the amount to
+// the money parser via AsyncLocalStorage, so the on-chain settlement matches.
+app.use((req, res, next) => {
+  if (req.method === "POST" && req.path === "/v1/speak") {
+    const quote = estimateForRoute("POST /v1/speak", req.body);
+    if (quote) {
+      res.set("X-Tab-Price-Motes", quote.motes);
+      res.set("X-Tab-Price-X402", quote.x402);
+      res.set("X-Tab-Price-Basis", quote.basis);
+      return priceStore.run(quote.motes, () => next());
+    }
+  }
+  next();
+});
+
 if (cfg.devBypass) {
   console.warn("⚠️  DEV_BYPASS_PAYMENT=true - x402 paywall DISABLED. Dev only; no on-chain payment.");
 } else {
@@ -271,6 +311,6 @@ app.get("/health", (_req, res) => res.json({ status: "ok", service: "casper-agen
 
 app.listen(cfg.port, "0.0.0.0", () => {
   console.log(`🛤️  Proxy (rail) listening at http://0.0.0.0:${cfg.port}`);
-  console.log(`    Pay-gated: POST /v1/speak  @ ${cfg.priceMotes} motes WCSPR per call`);
+  console.log(`    Pay-gated: POST /v1/speak  @ dynamic price (per-character), quote: GET /v1/quote`);
   console.log(`    Dashboard API: GET/POST /api/*`);
 });
