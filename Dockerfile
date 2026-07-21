@@ -31,11 +31,9 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/web ./web
 
-# Ship runtime config + treasury key so the container works without
-# hand-set platform secrets (Fly secrets still override .env values)
-COPY --from=builder /app/.env ./.env
-COPY --from=builder /app/facilitator.pem ./facilitator.pem
-# Token contract wasm - needed only by `npm run deploy-token`
+# Secrets are NOT baked into the image — set them as platform secrets
+# (Fly: `fly secrets set …`, Railway: service Variables). See README.
+# Token contract wasm — needed only by `npm run deploy-token`
 COPY --from=builder /app/assets ./assets
 
 # Create data directory for ledger

@@ -18,6 +18,7 @@ const {
 
 const rpcUrl = process.env.RPCURL_CASPER_CASPER_TEST || "https://node.testnet.casper.network/rpc";
 const chainName = (process.env.CAIP2_CHAIN_ID || "casper:casper-test").split(":")[1];
+const deployerPemInline = process.env.DEPLOYER_PRIVATE_KEY_PEM;
 const deployerPemPath = process.env.DEPLOYER_PRIVATE_KEY_PATH || "./facilitator.pem";
 const deployerAlgo = (process.env.DEPLOYER_KEY_ALGO || "ed25519").toLowerCase();
 const PACKAGE_HASH_KEY = "X402_package_hash";
@@ -28,7 +29,13 @@ function rpc() {
 
 function deployerKey() {
   const algo = deployerAlgo === "secp256k1" ? KeyAlgorithm.SECP256K1 : KeyAlgorithm.ED25519;
-  return PrivateKey.fromPem(readFileSync(deployerPemPath, "utf8"), algo);
+  // Prefer an inline PEM from a platform secret (Fly/Railway) so no key file ships
+  // in the image; fall back to a local file for development. Env-stored PEMs often
+  // carry literal "\n" instead of newlines — normalize them.
+  const pem = deployerPemInline
+    ? deployerPemInline.replace(/\\n/g, "\n")
+    : readFileSync(deployerPemPath, "utf8");
+  return PrivateKey.fromPem(pem, algo);
 }
 
 // Pull the X402_package_hash named key out of a state_get_entity response.

@@ -1,0 +1,14 @@
+# Never bake secrets or local cruft into the image — provide config via
+# platform secrets (Fly/Railway env) instead.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+node_modules
+.git
+.github
+data
+out.mp3
+out.*.mp3
+*.log
