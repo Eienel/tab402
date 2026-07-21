@@ -86,6 +86,21 @@
   .silent svg{flex:none;margin-top:2px}
   .seed{color:var(--faint)}
 
+  /* router widget */
+  #prompt{width:100%;min-height:96px;resize:vertical;background:#08080a;border:1px solid var(--line);
+    border-radius:10px;padding:12px 13px;color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
+  #prompt:focus{outline:none;border-color:var(--accent)}
+  .qrow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--muted)}
+  .qrow:last-of-type{border-bottom:none}
+  .modeltag{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:13px;font-weight:600;
+    border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+  .modeltag .dot{width:7px;height:7px;border-radius:50%}
+  .tier-lite{color:var(--good)} .tier-lite .dot{background:var(--good)}
+  .tier-flash{color:var(--warn)} .tier-flash .dot{background:var(--warn)}
+  .tier-pro{color:var(--accent)} .tier-pro .dot{background:var(--accent)}
+  .savebar{height:8px;border-radius:999px;background:#08080a;border:1px solid var(--line);overflow:hidden;margin:6px 0 2px}
+  .savebar>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#2aa);transition:width .5s var(--ease)}
+
   /* explainer */
   .how{border-top:1px solid var(--line);margin-top:40px;padding:40px 0 0}
   .how .kicker{color:var(--accent)}
@@ -147,14 +162,14 @@
   <div class="stage">
     <div class="panel controls">
       <h3>Set the budget</h3>
-      <p class="note">Each spoken line settles on Casper for <span class="mono accent">0.10 X402</span>. Choose how much
-        the agent gets to start with.</p>
+      <p class="note">Each line is <b>priced per character</b> by the rail and settles on Casper — roughly
+        <span class="mono accent">0.05–0.06 X402</span> a line. Choose the agent's starting balance.</p>
       <div class="field">
         <span class="lbl">Starting budget</span>
         <div class="chips" id="chips">
-          <button class="chip" data-budget="0.20" aria-pressed="false"><b>0.20</b>2 lines</button>
-          <button class="chip" data-budget="0.35" aria-pressed="true"><b>0.35</b>3 lines</button>
-          <button class="chip" data-budget="0.50" aria-pressed="false"><b>0.50</b>5 lines</button>
+          <button class="chip" data-budget="0.12" aria-pressed="false"><b>0.12</b>~2 lines</button>
+          <button class="chip" data-budget="0.18" aria-pressed="true"><b>0.18</b>~3 lines</button>
+          <button class="chip" data-budget="0.24" aria-pressed="false"><b>0.24</b>~4 lines</button>
         </div>
       </div>
       <div class="runrow">
@@ -166,7 +181,7 @@
     </div>
 
     <div class="panel">
-      <div class="meterhead"><span>remaining budget</span><b id="bal" class="mono">0.35</b></div>
+      <div class="meterhead"><span>remaining budget</span><b id="bal" class="mono">0.18</b></div>
       <div class="meter"><i id="bar"></i></div>
       <div class="ledger" id="ledger"><span class="seed">Pick a budget and press “Run the agent”.</span></div>
     </div>
@@ -183,6 +198,30 @@
     <p class="realnote">Every line you hear is real: the payment settles on Casper testnet (click a tx link to verify on the
       explorer) and the audio comes back from the paid rail. Provision your own key in the
       <a href="/dashboard">developer dashboard</a> or read the <a href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">integration on GitHub</a>.</p>
+  </section>
+
+  <section class="how" style="border-top:1px solid var(--line)">
+    <p class="kicker">Cost-aware routing</p>
+    <h1 style="font-size:clamp(24px,4vw,34px)">One endpoint. The rail picks the model.</h1>
+    <p class="sub" style="margin-bottom:8px">Send a prompt and the rail routes it to the cheapest model that should still do the
+      job, prices the x402 charge to <em>that</em> model, and shows what it saved versus always calling Pro. Live quotes from the rail.</p>
+    <div class="stage" style="margin-top:26px">
+      <div class="panel controls">
+        <div class="field">
+          <span class="lbl">Prompt</span>
+          <textarea id="prompt" placeholder="Ask anything…">What is the capital of France?</textarea>
+        </div>
+        <span class="lbl">Or try one</span>
+        <div class="chips" id="examples" style="margin-top:9px">
+          <button class="chip" data-p="What is the capital of France?"><b>Simple</b>a quick fact</button>
+          <button class="chip" data-p="Write a TypeScript function that debounces an async API call."><b>Code</b>a build task</button>
+          <button class="chip" data-p="Analyze the tradeoffs between proof-of-stake and proof-of-work, and explain why deterministic finality matters for per-call machine payments."><b>Reasoning</b>a hard problem</button>
+        </div>
+      </div>
+      <div class="panel" id="routeout">
+        <span class="seed">Type a prompt — the rail shows which model it picks and the price.</span>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -205,11 +244,20 @@
     "When my balance runs out, I stop. No surprise bills, ever.",
     "This is what machine-native payments look like."
   ];
-  const COST = 0.10;
   const SPK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>';
-  let START = 0.35, running = false, timer = null;
+  let START = 0.18, running = false, timer = null;
 
   const $ = id => document.getElementById(id);
+
+  // Ask the rail what a line will actually cost (priced per character). This is
+  // the same quote the paywall settles, so the ledger shows real amounts.
+  async function priceOf(text){
+    try{
+      const q = await (await fetch('/v1/quote?text=' + encodeURIComponent(text))).json();
+      const p = parseFloat(q.x402);
+      return Number.isFinite(p) && p > 0 ? p : 0.055;
+    }catch(e){ return 0.055; }
+  }
 
   // budget chips
   document.querySelectorAll('#chips .chip').forEach(c => c.addEventListener('click', () => {
@@ -261,13 +309,15 @@
     ledger.innerHTML = ''; bar.style.width = '100%'; bal.textContent = START.toFixed(2);
 
     while(running && i < SCRIPT.length){
-      if(remaining < COST){
+      const price = await priceOf(SCRIPT[i]);
+      if(!running) break;
+      if(remaining < price){
         const d = document.createElement('div'); d.className = 'silent';
-        d.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted - agent goes silent. ' + (SCRIPT.length - i) + ' line(s) unspoken.';
+        d.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Budget exhausted - the next line costs ' + price.toFixed(3) + ' X402, more than the ' + remaining.toFixed(3) + ' left. Agent goes silent; ' + (SCRIPT.length - i) + ' line(s) unspoken.';
         ledger.appendChild(d); break;
       }
       const row = document.createElement('div'); row.className = 'lrow';
-      row.innerHTML = '<span class="t">' + SPK + '#' + (i+1) + '&nbsp; ' + SCRIPT[i] + ' <span class="seed">settling on-chain…</span></span><span class="cost">-' + COST.toFixed(2) + '</span>';
+      row.innerHTML = '<span class="t">' + SPK + '#' + (i+1) + '&nbsp; ' + SCRIPT[i] + ' <span class="seed">settling on-chain…</span></span><span class="cost">-' + price.toFixed(3) + '</span>';
       ledger.appendChild(row);
       try{
         const res = await fetch('/api/demo/speak', {
@@ -284,8 +334,8 @@
         const tx = settleTx(res);
         const bypassed = res.headers.get('X-DEMO-MODE') === 'payment-bypassed';
         const blob = await res.blob();
-        remaining = +(remaining - COST).toFixed(2);
-        bar.style.width = (remaining / START * 100) + '%'; bal.textContent = remaining.toFixed(2);
+        remaining = +(remaining - price).toFixed(3);
+        bar.style.width = Math.max(remaining / START * 100, 0) + '%'; bal.textContent = remaining.toFixed(2);
         const seed = row.querySelector('.seed');
         if(tx){
           seed.innerHTML = '<a href="https://testnet.cspr.live/transaction/' + tx + '" target="_blank" rel="noopener" style="color:var(--good)">settled ✓ tx ' + tx.slice(0,10) + '…</a>';
@@ -305,6 +355,39 @@
   }
 
   resetDemo();
+
+  // ---- cost-aware router widget (live quotes from the rail) ----
+  const promptEl = $('prompt'), routeout = $('routeout');
+  let qTimer;
+  const SEED_MSG = '<span class="seed">Type a prompt — the rail shows which model it picks and the price.</span>';
+  function tierClass(model){ return model.includes('lite') ? 'tier-lite' : model.includes('pro') ? 'tier-pro' : 'tier-flash'; }
+  function renderRoute(q){
+    const m = q.meta || {};
+    const premium = parseFloat(m.premiumX402) || 0, save = parseFloat(m.savingsX402) || 0;
+    const pct = premium > 0 ? Math.round(save / premium * 100) : 0;
+    return '<div class="meterhead" style="margin-bottom:14px"><span>routed to</span>'
+      + '<span class="modeltag ' + tierClass(m.model || '') + '"><span class="dot"></span>' + (m.modelLabel || '?') + '</span></div>'
+      + '<div class="qrow"><span>why</span><span style="color:var(--text)">' + (m.reason || '') + '</span></div>'
+      + '<div class="qrow"><span>price for this call (ceiling)</span><b class="mono accent">' + q.x402 + ' ' + q.asset + '</b></div>'
+      + '<div class="qrow"><span>if it always used Pro</span><b class="mono" style="text-decoration:line-through;color:var(--faint)">' + m.premiumX402 + ' ' + q.asset + '</b></div>'
+      + '<div style="padding-top:12px"><div class="qrow" style="border:none;padding-bottom:4px"><span>you save</span>'
+      + '<b class="mono" style="color:var(--good)">' + m.savingsX402 + ' ' + q.asset + ' · ' + pct + '%</b></div>'
+      + '<div class="savebar"><i style="width:' + pct + '%"></i></div></div>'
+      + '<p class="seed" style="margin-top:14px">Bounded ceiling (Workaround A): the agent is credited the difference between this and the metered actual after the call.</p>';
+  }
+  async function quoteRoute(){
+    const text = (promptEl.value || '').trim();
+    if(!text){ routeout.innerHTML = SEED_MSG; return; }
+    routeout.innerHTML = '<span class="seed">Routing…</span>';
+    try{
+      const q = await (await fetch('/v1/quote?prompt=' + encodeURIComponent(text))).json();
+      routeout.innerHTML = renderRoute(q);
+    }catch(e){ routeout.innerHTML = '<span class="seed">Rail unavailable — try again.</span>'; }
+  }
+  promptEl.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(quoteRoute, 450); });
+  document.querySelectorAll('#examples .chip').forEach(c =>
+    c.addEventListener('click', () => { promptEl.value = c.dataset.p; quoteRoute(); }));
+  quoteRoute(); // initial render for the default prompt
 </script>
 </body>
 </html>
