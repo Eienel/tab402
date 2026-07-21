@@ -18,7 +18,12 @@ const {
 
 const rpcUrl = process.env.RPCURL_CASPER_CASPER_TEST || "https://node.testnet.casper.network/rpc";
 const chainName = (process.env.CAIP2_CHAIN_ID || "casper:casper-test").split(":")[1];
-const deployerPemInline = process.env.DEPLOYER_PRIVATE_KEY_PEM;
+// This self-hosted setup uses one account for facilitator + treasury, so the
+// deployer key falls back to the facilitator's inline PEM when no explicit
+// deployer PEM is set — that way importing the existing .env fully configures
+// funding with no extra secret and no key file in the image.
+const deployerPemInline =
+  process.env.DEPLOYER_PRIVATE_KEY_PEM || process.env.SECRET_KEY_PEM_CASPER_CASPER_TEST;
 const deployerPemPath = process.env.DEPLOYER_PRIVATE_KEY_PATH || "./facilitator.pem";
 const deployerAlgo = (process.env.DEPLOYER_KEY_ALGO || "ed25519").toLowerCase();
 const PACKAGE_HASH_KEY = "X402_package_hash";
