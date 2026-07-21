@@ -18,7 +18,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { AsyncLocalStorage } from "node:async_hooks";
 import dashboardApi from "../dashboard/api.js";
-import { estimateForRoute } from "./pricing.js";
+import { estimateForRoute, costMotes, maxOutputTokens, toX402 } from "./pricing.js";
+import { chooseModel, models, PREMIUM, estTokens } from "./router.js";
 
 config();
 
@@ -53,7 +54,10 @@ function parseEnv(): Env {
   return {
     port: parseInt(process.env.PROXY_PORT || "4021", 10),
     payeeAddress: required("PAYEE_ADDRESS"),
-    facilitatorURL: required("FACILITATOR_URL"),
+    // The facilitator runs in the same container (see Dockerfile CMD), so default
+    // to localhost instead of hard-requiring the var — avoids a crash-loop when
+    // it isn't set as a platform secret.
+    facilitatorURL: process.env.FACILITATOR_URL || "http://127.0.0.1:4022",
     facilitatorAPIKey: process.env.FACILITATOR_API_KEY || "",
     chainID: required("CAIP2_CHAIN_ID"),
     assetPackage: required("ASSET_PACKAGE"),
@@ -116,6 +120,12 @@ app.use(
       "X-Tab-Price-Motes",
       "X-Tab-Price-X402",
       "X-Tab-Price-Basis",
+      "X-Tab-Model",
+      "X-Tab-Reason",
+      "X-Tab-Savings-X402",
+      "X-Tab-Reserved-X402",
+      "X-Tab-Actual-X402",
+      "X-Tab-Credit-X402",
     ],
     maxAge: 24 * 60 * 60,
   }),
@@ -219,19 +229,31 @@ app.post("/api/demo/speak", async (req, res) => {
 // Public quote endpoint: what would this call cost? Lets the agent (or the demo
 // UI) show the price before paying. No payment required.
 app.get("/v1/quote", (req, res) => {
-  const quote = estimateForRoute("POST /v1/speak", { text: String(req.query.text ?? "") });
+  const quote =
+    req.query.prompt !== undefined
+      ? estimateForRoute("POST /v1/complete", {
+          prompt: String(req.query.prompt),
+          model: req.query.model ? String(req.query.model) : undefined,
+        })
+      : estimateForRoute("POST /v1/speak", { text: String(req.query.text ?? "") });
   res.json({ asset: cfg.assetSymbol, decimals: 9, ...quote });
 });
 
-// Price each POST /v1/speak from its actual cost driver and hand the amount to
-// the money parser via AsyncLocalStorage, so the on-chain settlement matches.
+// Price each paid call from its actual cost driver and hand the amount to the
+// money parser via AsyncLocalStorage, so the on-chain settlement matches.
+const PRICED_ROUTES = new Set(["/v1/speak", "/v1/complete"]);
 app.use((req, res, next) => {
-  if (req.method === "POST" && req.path === "/v1/speak") {
-    const quote = estimateForRoute("POST /v1/speak", req.body);
+  if (req.method === "POST" && PRICED_ROUTES.has(req.path)) {
+    const quote = estimateForRoute(`POST ${req.path}`, req.body);
     if (quote) {
       res.set("X-Tab-Price-Motes", quote.motes);
       res.set("X-Tab-Price-X402", quote.x402);
       res.set("X-Tab-Price-Basis", quote.basis);
+      if (quote.meta.model) {
+        res.set("X-Tab-Model", String(quote.meta.model));
+        res.set("X-Tab-Reason", String(quote.meta.reason));
+        res.set("X-Tab-Savings-X402", String(quote.meta.savingsX402));
+      }
       return priceStore.run(quote.motes, () => next());
     }
   }
@@ -255,6 +277,18 @@ if (cfg.devBypass) {
           ],
           description: "Text-to-speech via Deepgram, paid per call over x402",
           mimeType: "audio/mpeg",
+        },
+        "POST /v1/complete": {
+          accepts: [
+            {
+              scheme: "exact",
+              price: "$0.001",
+              network: chainID,
+              payTo: cfg.payeeAddress,
+            },
+          ],
+          description: "LLM completion via a cost-routed Gemini model, paid per call over x402",
+          mimeType: "application/json",
         },
       },
       new x402ResourceServer(facilitatorClient).register(chainID, casperScheme),
@@ -307,10 +341,109 @@ app.post("/v1/speak", async (req, res) => {
   }
 });
 
+// ---- LLM completion: the rail routes to the cheapest capable Gemini model,
+// prices the reserved ceiling (Workaround A), calls it, and reports the actual
+// cost so the overage can be credited back to the agent's Tab. Works without a
+// key in stub mode; set GEMINI_API_KEY for live output.
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_STUB = process.env.GEMINI_DEV_STUB === "true" || !GEMINI_KEY;
+
+interface GeminiUsage {
+  promptTokenCount: number;
+  candidatesTokenCount: number;
+}
+interface GeminiCompletion {
+  text: string;
+  usage: GeminiUsage;
+  stub: boolean;
+}
+
+async function geminiComplete(
+  apiModel: string,
+  prompt: string,
+  maxOut: number,
+): Promise<GeminiCompletion> {
+  if (GEMINI_STUB) {
+    const text = `[stub] "${apiModel}" would answer here. Set GEMINI_API_KEY on the rail for live output.`;
+    return {
+      text,
+      usage: { promptTokenCount: estTokens(prompt), candidatesTokenCount: estTokens(text) },
+      stub: true,
+    };
+  }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${GEMINI_KEY}`;
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxOut },
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!r.ok) throw new Error(`gemini ${r.status}: ${await r.text()}`);
+  const j = (await r.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    usageMetadata?: Partial<GeminiUsage>;
+  };
+  const text = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("");
+  return {
+    text,
+    usage: {
+      promptTokenCount: j.usageMetadata?.promptTokenCount ?? estTokens(prompt),
+      candidatesTokenCount: j.usageMetadata?.candidatesTokenCount ?? estTokens(text),
+    },
+    stub: false,
+  };
+}
+
+// Protected: only runs after payment (the reserved ceiling) has settled.
+app.post("/v1/complete", async (req, res) => {
+  const prompt = (req.body?.prompt as string) || "";
+  if (!prompt.trim()) {
+    return res.status(400).json({ error: "Body must include non-empty 'prompt'." });
+  }
+  const hint = typeof req.body?.model === "string" ? (req.body.model as string) : undefined;
+  const { model, reason } = chooseModel(prompt, hint);
+  const spec = models()[model];
+  const maxOut = maxOutputTokens();
+  // The reserved amount is what the paywall settled (ceiling); fall back to a
+  // recompute if the store isn't set (e.g. dev bypass).
+  const reserved = BigInt(priceStore.getStore() ?? costMotes(model, estTokens(prompt), maxOut).toString());
+  try {
+    const out = await geminiComplete(spec.apiModel, prompt, maxOut);
+    const actual = costMotes(model, out.usage.promptTokenCount, out.usage.candidatesTokenCount);
+    const credit = reserved > actual ? reserved - actual : 0n;
+    const premium = costMotes(PREMIUM, out.usage.promptTokenCount, out.usage.candidatesTokenCount);
+    const receipt = {
+      model: spec.id,
+      modelLabel: spec.label,
+      reason,
+      reservedX402: toX402(reserved),
+      actualX402: toX402(actual),
+      creditX402: toX402(credit),
+      savedVsProX402: toX402(premium > actual ? premium - actual : 0n),
+      tokens: { in: out.usage.promptTokenCount, out: out.usage.candidatesTokenCount },
+      mode: out.stub ? "stub" : "live",
+    };
+    res.set("X-Tab-Reserved-X402", receipt.reservedX402);
+    res.set("X-Tab-Actual-X402", receipt.actualX402);
+    res.set("X-Tab-Credit-X402", receipt.creditX402);
+    res.json({ text: out.text, _tab: receipt });
+    console.log(
+      `🧠 ${spec.label} (${reason}) reserved ${receipt.reservedX402}, actual ${receipt.actualX402}, credit ${receipt.creditX402} X402 [${receipt.mode}]`,
+    );
+  } catch (err) {
+    console.error("Completion error:", err);
+    res.status(502).json({ error: "gemini_failed", detail: err instanceof Error ? err.message : "unknown" });
+  }
+});
+
 app.get("/health", (_req, res) => res.json({ status: "ok", service: "casper-agent-rail/proxy" }));
 
 app.listen(cfg.port, "0.0.0.0", () => {
   console.log(`🛤️  Proxy (rail) listening at http://0.0.0.0:${cfg.port}`);
-  console.log(`    Pay-gated: POST /v1/speak  @ dynamic price (per-character), quote: GET /v1/quote`);
+  console.log(`    Pay-gated: POST /v1/speak (per-char) · POST /v1/complete (routed Gemini)`);
+  console.log(`    Quote: GET /v1/quote?text=… | ?prompt=…   ${GEMINI_STUB ? "· LLM: STUB (set GEMINI_API_KEY)" : "· LLM: live"}`);
   console.log(`    Dashboard API: GET/POST /api/*`);
 });
