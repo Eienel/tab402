@@ -12,12 +12,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Rye&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0b0b0d;--panel:#141417;--panel2:#1a1a20;--line:#27272e;
-    --text:#ededf0;--muted:#9595a0;--faint:#62626c;
-    --accent:#e8412f;--accent-soft:rgba(232,65,47,.12);
+    --bg:#060608;--panel:#111114;--panel2:#17171b;--line:#232329;
+    --text:#ededf0;--muted:#9a9aa4;--faint:#5f5f68;
+    --accent:#e8412f;--accent-soft:rgba(232,65,47,.12);--logo:#e8412f;--smoke:#eef0f2;
     --good:#36cf9b;--warn:#e8b339;--brass:#c9962b;
     --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
     --sans:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --apple:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
     --display:"Rye",Georgia,serif;--ease:cubic-bezier(.16,1,.3,1);
   }
   *{box-sizing:border-box}
@@ -32,28 +33,34 @@
   .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
-    background:rgba(11,11,13,.72);border-bottom:1px solid var(--line)}
-  .navin{display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px}
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:19px;letter-spacing:.01em}
-  .mark{width:28px;height:28px;object-fit:contain;flex:none;filter:drop-shadow(0 0 7px rgba(232,65,47,.4))}
+  nav{position:fixed;inset:0 0 auto 0;z-index:70;display:flex;justify-content:center;
+    padding:20px 24px;transition:padding .45s var(--ease);pointer-events:none}
+  .navbar{pointer-events:auto;width:100%;max-width:1000px;display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:8px 10px 8px 8px;border:1px solid transparent;border-radius:999px;
+    transition:max-width .55s var(--ease),background .45s var(--ease),border-color .45s var(--ease),box-shadow .45s var(--ease),padding .45s var(--ease)}
+  nav.shrunk{padding:12px 24px}
+  nav.shrunk .navbar{max-width:74%;background:rgba(9,9,12,.6);backdrop-filter:blur(18px) saturate(1.3);
+    border-color:rgba(255,255,255,.09);box-shadow:0 16px 46px -24px rgba(0,0,0,.9);padding:8px 10px 8px 16px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:19px;color:var(--smoke);letter-spacing:.01em}
+  .mark{width:28px;height:28px;object-fit:contain;flex:none;filter:drop-shadow(0 0 8px rgba(232,65,47,.5))}
   .navcta{display:flex;align-items:center;gap:10px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:9px;
-    font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid var(--line);background:var(--panel);
-    color:var(--text);cursor:pointer;transition:transform .15s var(--ease),border-color .25s,background .25s,filter .2s}
-  .btn:hover{border-color:#3a3a42}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:999px;
+    font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);
+    color:var(--smoke);cursor:pointer;transition:transform .15s var(--ease),border-color .25s,background .25s,filter .2s}
+  .btn:hover{border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.09)}
   .btn:active{transform:translateY(1px) scale(.99)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn.primary:hover{filter:brightness(1.06)}
-  .btn.ghost{background:var(--panel2)}
+  .btn.primary{background:var(--logo);border-color:var(--logo);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:rgba(255,255,255,.05)}
+  @media(max-width:560px){nav.shrunk .navbar{max-width:94%}}
 
-  header.intro{padding:64px 0 8px}
-  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 14px;
+  header.intro{padding:128px 0 8px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--logo);margin:0 0 16px;
     display:inline-flex;align-items:center;gap:9px}
   .pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(54,207,155,.5);animation:pulse 2.4s var(--ease) infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(54,207,155,.45)}70%{box-shadow:0 0 0 8px rgba(54,207,155,0)}100%{box-shadow:0 0 0 0 rgba(54,207,155,0)}}
-  h1{font-size:clamp(30px,5.2vw,48px);line-height:1.05;letter-spacing:-.035em;font-weight:700;margin:0 0 16px}
-  h1 em{font-style:normal;color:var(--accent)}
+  h1{font-family:var(--apple);font-size:clamp(32px,5.4vw,54px);line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:0 0 16px;color:var(--smoke)}
+  h1 em{font-style:normal;color:var(--logo)}
   .sub{font-size:clamp(15px,2.4vw,18px);color:var(--muted);max-width:56ch;line-height:1.6}
 
   /* demo stage */
@@ -126,7 +133,7 @@
   }
   @media(max-width:560px){
     .wrap{padding:0 16px}
-    header.intro{padding:40px 0 4px}
+    header.intro{padding:96px 0 4px}
     .navcta .btn.hide-sm{display:none}
     .panel{padding:18px}
     .steps{grid-template-columns:1fr}
@@ -138,15 +145,13 @@
 <body>
 <div class="grain"></div>
 
-<nav>
-  <div class="wrap navin">
-    <a class="brand" href="/">
-      <img class="mark" src="/logo.png" alt="Tab logo" />
-      Tab
-    </a>
+<nav id="nav">
+  <div class="navbar">
+    <a class="brand" href="/"><img class="mark" src="/logo.png" alt="Tab" /> Tab</a>
     <div class="navcta">
-      <a class="btn ghost hide-sm" href="/">← Home</a>
-      <a class="btn" href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn ghost hide-sm" href="/">Home</a>
+      <a class="btn" href="/dashboard">Dashboard</a>
+      <a class="btn primary" href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
 </nav>
@@ -237,6 +242,11 @@
 </footer>
 
 <script>
+  // nav: wide across the top -> floating pill on scroll (matches the landing)
+  (function(){ const n=document.getElementById('nav'); if(!n) return;
+    const s=()=>n.classList.toggle('shrunk', window.scrollY>30); s();
+    window.addEventListener('scroll', s, {passive:true}); })();
+
   const SCRIPT = [
     "I am an autonomous agent, and I hold my own money on Casper.",
     "Every sentence I speak, I pay for myself, per request.",
