@@ -202,8 +202,9 @@
   @keyframes onpulse{0%,100%{box-shadow:0 0 0 0 rgba(232,65,47,.18)}50%{box-shadow:0 0 0 6px rgba(232,65,47,0)}}
   .savepill{margin-top:16px;font-family:var(--mono);font-size:13px;color:#26262b}
   .savepill b{color:var(--logo)}
-  .rope{position:absolute;left:50%;top:0;width:2px;height:100%;transform:translateX(-50%) scaleY(var(--rope,0));
-    transform-origin:top center;background:linear-gradient(var(--logo),rgba(232,65,47,0));z-index:1;pointer-events:none;opacity:.55}
+  .rope{position:absolute;left:50%;top:0;width:3px;height:100%;transform:translateX(-50%) scaleY(var(--rope,0));
+    transform-origin:top center;border-radius:3px;z-index:1;pointer-events:none;opacity:.9;
+    background:linear-gradient(var(--logo),rgba(232,65,47,.12));box-shadow:0 0 14px rgba(232,65,47,.55)}
   .reveal2{opacity:0;transform:translateY(48px) scale(.985);
     transition:opacity .9s cubic-bezier(.34,1.28,.5,1),transform .9s cubic-bezier(.34,1.28,.5,1)}
   .reveal2.in{opacity:1;transform:none}
