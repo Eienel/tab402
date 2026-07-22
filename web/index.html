@@ -209,6 +209,50 @@
   .reveal2.in{opacity:1;transform:none}
   @media(max-width:760px){.bento2{grid-template-columns:1fr}.b-wide{grid-column:auto}.lightsec{padding:82px 0 90px}.rope{display:none}}
 
+  /* page 2: black diagonal wedge on the right with smoke drifting through it */
+  .diag{position:absolute;inset:0;z-index:0;pointer-events:none;background:#0a0a0d;
+    clip-path:polygon(70% 0, 100% 0, 100% 100%, 56% 100%)}
+  .diagsmoke{position:absolute;z-index:1;top:-14%;right:-6%;width:min(54vw,760px);pointer-events:none;
+    mix-blend-mode:screen;opacity:.6;animation:drift 30s ease-in-out infinite alternate;
+    -webkit-mask-image:radial-gradient(58% 58% at 56% 46%,#000 40%,transparent 84%);
+    mask-image:radial-gradient(58% 58% at 56% 46%,#000 40%,transparent 84%)}
+  @keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-30px,20px,0)}}
+  .lightinner{position:relative;z-index:2;max-width:660px}
+  .lightinner .lightp{max-width:52ch}
+  @media(max-width:900px){
+    .diag{clip-path:polygon(0 86%,100% 74%,100% 100%,0 100%)}
+    .diagsmoke{top:auto;bottom:-8%;right:auto;left:-10%;width:min(120vw,640px)}
+    .lightinner{max-width:100%}
+  }
+
+  /* ===== deep-dive: mainly white (black hero/footer/code give the contrast) ===== */
+  section.light{background:#f4f3f1;color:#161619;border-top:1px solid rgba(20,20,25,.08)}
+  section.light .kicker{color:var(--logo)}
+  section.light .h2{color:#111114}
+  section.light .p{color:#55555d}
+  section.light .prob{border:1px solid rgba(20,20,25,.1)}
+  section.light .prob .cell{border-color:rgba(20,20,25,.1);transition:background .35s var(--ease)}
+  section.light .prob .cell:hover{background:rgba(20,20,25,.03)}
+  section.light .cell h3{color:#17171b}
+  section.light .cell p{color:#55555d}
+  section.light .ic{color:var(--logo)}
+  section.light .steps{border-top-color:rgba(20,20,25,.14)}
+  section.light .step{border-right-color:rgba(20,20,25,.12);border-bottom-color:rgba(20,20,25,.12)}
+  section.light .step .n{color:var(--logo)}
+  section.light .step h4{color:#17171b}
+  section.light .step p{color:#55555d}
+  section.light .tile{background:#fff;border-color:rgba(20,20,25,.09);box-shadow:0 24px 48px -30px rgba(20,20,25,.18)}
+  section.light .tile:hover{border-color:var(--accent-line);background:#fff;transform:translateY(-3px)}
+  section.light .tile .big{color:#111114}
+  section.light .tile h4{color:#17171b}
+  section.light .tile p{color:#55555d}
+  section.light .tile .mono{color:#8a3f36}
+  section.light .demolink{border-color:rgba(20,20,25,.1)}
+  section.light .demolink-pre{border-right-color:rgba(20,20,25,.1)}
+  section.light .demolink-cta{background:#fff}
+  section.light .demolink-cta h3{color:#17171b}
+  section.light .demolink-cta p{color:#55555d}
+
   /* ---- mobile ---- */
   @media(max-width:600px){
     .wrap{padding:0 18px}
@@ -279,9 +323,11 @@
 </div>
 
 <section class="lightsec" id="rails">
+  <div class="diag" aria-hidden="true"></div>
+  <img class="diagsmoke" src="/hero-cloud.png" alt="" />
   <div class="rope" aria-hidden="true"></div>
-  <img class="cloud2" src="/hero-cloud.png" alt="" />
   <div class="wrap">
+   <div class="lightinner">
     <div class="lighthead reveal2">
       <p class="kicker2">the primitive</p>
       <h2 class="lighth2">A smart rail between your agent and every <span class="red">API</span>.</h2>
@@ -311,10 +357,11 @@
         <p>Each paid request is a final transfer on Casper testnet in about two seconds, verifiable on the explorer, with no invoice to take on trust. Zug finality is what makes per-call settlement viable.</p>
       </div>
     </div>
+   </div>
   </div>
 </section>
 
-<section id="problem">
+<section id="problem" class="light">
   <div class="wrap">
     <p class="kicker">The gap</p>
     <h2 class="h2">x402 lets agents pay. Nothing lets you trust them with money.</h2>
@@ -341,7 +388,7 @@
   </div>
 </section>
 
-<section id="how">
+<section id="how" class="light">
   <div class="wrap">
     <p class="kicker">How it works</p>
     <h2 class="h2">Four steps, one on-chain transaction per call.</h2>
@@ -356,7 +403,7 @@
   </div>
 </section>
 
-<section id="demo">
+<section id="demo" class="light">
   <div class="wrap">
     <p class="kicker">Live demo</p>
     <h2 class="h2">Watch an agent hit the wall.</h2>
@@ -381,7 +428,7 @@
   </div>
 </section>
 
-<section id="why">
+<section id="why" class="light">
   <div class="wrap">
     <p class="kicker">Why Casper</p>
     <h2 class="h2">The chain is load-bearing, not incidental.</h2>
@@ -408,7 +455,7 @@
   </div>
 </section>
 
-<section id="build">
+<section id="build" class="light">
   <div class="wrap">
     <p class="kicker">Integrate</p>
     <h2 class="h2">A drop-in endpoint for any agent.</h2>
