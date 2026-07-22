@@ -251,6 +251,26 @@
   section.light .demolink-cta{background:#fff}
   section.light .demolink-cta h3{color:#131316}
   section.light .demolink-cta p{color:#5b5b63}
+  /* per-feature mini visuals (perpetual micro-motion, transform/opacity only) */
+  .viz{position:relative;margin:20px 0 2px}
+  .vfin,.vcap{height:8px;border-radius:999px;background:rgba(20,20,25,.08);overflow:hidden;position:relative}
+  .vfin{max-width:300px} .vcap{max-width:210px}
+  .vfin>i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);border-radius:999px;
+    background:linear-gradient(90deg,var(--logo),#f2795f);animation:vfin 2.8s cubic-bezier(.22,1,.36,1) infinite}
+  @keyframes vfin{0%{transform:scaleX(0);opacity:1}42%{transform:scaleX(1)}78%{transform:scaleX(1);opacity:1}90%{opacity:.12}100%{transform:scaleX(0);opacity:0}}
+  .vcap>i{position:absolute;top:0;bottom:0;left:0;width:58%;border-radius:999px;
+    background:linear-gradient(90deg,var(--logo),#f2795f);animation:vcap 3.4s var(--ease) infinite}
+  @keyframes vcap{0%,100%{width:56%}50%{width:80%}}
+  .vstream{display:flex;align-items:flex-end;gap:6px;height:34px;max-width:230px}
+  .vstream span{flex:1;background:var(--logo);border-radius:2px;height:100%;transform-origin:bottom;
+    transform:scaleY(.22);opacity:.28;animation:vstream 2.4s var(--ease) infinite}
+  .vstream span:nth-child(2){animation-delay:.16s}
+  .vstream span:nth-child(3){animation-delay:.32s}
+  .vstream span:nth-child(4){animation-delay:.48s}
+  .vstream span:nth-child(5){animation-delay:.64s}
+  .vstream span:nth-child(6){animation-delay:.8s}
+  @keyframes vstream{0%,72%,100%{transform:scaleY(.22);opacity:.28}20%{transform:scaleY(1);opacity:1}}
+  @media(prefers-reduced-motion:reduce){.vfin>i,.vcap>i,.vstream span{animation:none}}
 
   /* ---- mobile ---- */
   @media(max-width:600px){
@@ -435,17 +455,20 @@
         <p>Per-call on-chain settlement is only viable with deterministic finality. On a probabilistic
           chain you would wait blocks per request. Here the agent acts and knows it settled. Every API
           call becomes one real, final transaction.</p>
+        <div class="viz vfin" aria-hidden="true"><i></i></div>
       </div>
       <div class="tile">
         <div class="big">CEP-18</div>
         <h4>Our own credit token</h4>
         <p>The agent's token balance <i>is</i> its cap. Mint it, meter it, settle it via
           <span class="mono">transfer_with_authorization</span>.</p>
+        <div class="viz vcap" aria-hidden="true"><i></i></div>
       </div>
       <div class="tile">
         <div class="big">0.10</div>
         <h4>Sub-cent micropayments</h4>
         <p>x402 prices each request in tokens. No accounts, no subscriptions, no human approval.</p>
+        <div class="viz vstream" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
       </div>
     </div>
   </div>
