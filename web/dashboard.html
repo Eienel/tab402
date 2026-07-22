@@ -90,6 +90,12 @@
   .hint{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.55}
   .pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);
     border:1px solid color-mix(in srgb,var(--brass) 40%,var(--line));border-radius:999px;padding:3px 10px}
+  /* dark sections carry the same graph grid, in white, full-bleed across the body */
+  .darksec{position:relative;overflow:hidden}
+  .darksec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:44px 44px}
+  .darksec>*{position:relative;z-index:1}
   /* light band: the black↔white↔logo rhythm from the landing */
   .lightsec{position:relative;background:#f5f5f6;color:#131316;border-top:1px solid var(--line);
     padding:80px 0 88px;margin-top:48px;overflow:hidden}
@@ -122,6 +128,7 @@
   </div>
 </nav>
 
+<section class="darksec">
 <div class="wrap">
   <header class="intro">
     <span class="kicker"><span class="pulse"></span> run a tab · settle on-chain</span>
@@ -171,6 +178,7 @@
   </div>
 
 </div>
+</section>
 
 <section class="lightsec">
   <div class="wrap">
