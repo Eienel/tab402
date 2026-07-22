@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tab - spend-bounded API payments for autonomous agents</title>
+<title>Tab - the paid API rail for autonomous agents</title>
 <link rel="icon" type="image/png" href="/logo.png" />
 <link rel="apple-touch-icon" href="/logo.png" />
-<meta property="og:title" content="Tab - spend-bounded API payments for agents" />
-<meta property="og:description" content="Open a Tab, fund it once, and your agent pays per request on-chain - with a cap it can't exceed." />
+<meta property="og:title" content="Tab - the paid API rail for agents" />
+<meta property="og:description" content="One endpoint your agent hits to pay for any API. Settled on Casper, routed to the cheapest model that fits, capped at a limit it can't cross." />
 <meta property="og:image" content="https://tab402.fly.dev/logo.png" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:image" content="https://tab402.fly.dev/logo.png" />
@@ -41,7 +41,7 @@
   .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-  /* nav — spread wide across the hero top, shrinks to a floating pill on scroll */
+  /* nav: spread wide across the hero top, shrinks to a floating pill on scroll */
   nav{position:fixed;inset:0 0 auto 0;z-index:70;display:flex;justify-content:center;
     padding:22px 24px;transition:padding .45s var(--ease);pointer-events:none}
   .navbar{pointer-events:auto;width:100%;max-width:1220px;display:flex;align-items:center;justify-content:space-between;gap:22px;
@@ -68,7 +68,7 @@
   .btn.primary:hover{filter:brightness(1.08)}
   @media(max-width:820px){.links{display:none} nav.shrunk .navbar{max-width:94%}}
 
-  /* hero — mountain full-bleed; cloud + morphing tagline float on the left */
+  /* hero: mountain full-bleed, cloud + morphing tagline float on the left */
   .hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;background:#060608}
   .hero-bg{position:absolute;inset:0;z-index:0}
   .hero-bg img{width:100%;height:100%;object-fit:cover;object-position:72% 50%}
@@ -109,13 +109,16 @@
   .strip b{font-weight:500;color:var(--muted);font-size:15px}
 
   section{padding:96px 0;border-top:1px solid var(--line)}
-  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 16px}
-  .h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;font-weight:600;margin:0 0 14px;max-width:18ch;line-height:1.1}
-  .p{color:var(--muted);font-size:17px;max-width:60ch;line-height:1.65}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--logo);margin:0 0 18px}
+  .h2{font-family:var(--apple);font-size:clamp(28px,4vw,46px);letter-spacing:-.035em;font-weight:800;margin:0 0 16px;max-width:17ch;line-height:1.04;color:var(--smoke)}
+  .p{color:#9fa0aa;font-size:clamp(16px,1.7vw,18px);max-width:62ch;line-height:1.65}
+  .cell h3,.step h4,.tile h4,.demolink-cta h3{font-family:var(--apple);letter-spacing:-.02em}
+  .tile .big{font-family:var(--apple)}
 
   /* problem - asymmetric 2-col, no 3-card row */
   .prob{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:40px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
-  .prob .cell{padding:30px 30px;border-bottom:1px solid var(--line)}
+  .prob .cell{padding:30px 30px;border-bottom:1px solid var(--line);transition:background .35s var(--ease)}
+  .prob .cell:hover{background:rgba(255,255,255,.018)}
   .prob .cell:nth-child(odd){border-right:1px solid var(--line)}
   .prob .cell h3{margin:0 0 9px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:10px}
   .prob .cell p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
@@ -150,8 +153,8 @@
   /* bento why-casper */
   .bento{display:grid;grid-template-columns:1.5fr 1fr;grid-auto-rows:1fr;gap:16px;margin-top:42px}
   .tile{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;
-    transition:border-color .3s var(--ease),transform .3s var(--ease)}
-  .tile:hover{border-color:#36363f;transform:translateY(-2px)}
+    transition:border-color .3s var(--ease),transform .3s var(--ease),background .3s var(--ease)}
+  .tile:hover{border-color:var(--accent-line);transform:translateY(-3px);background:#131317}
   .tile.span{grid-row:span 2}
   .tile h4{margin:0 0 8px;font-size:17px;font-weight:600}
   .tile p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6}
@@ -316,7 +319,7 @@
     <p class="kicker">The gap</p>
     <h2 class="h2">x402 lets agents pay. Nothing lets you trust them with money.</h2>
     <p class="p">Pay-per-call settles the crypto-native services. It does nothing for the APIs that
-      only take a card - and nothing to stop an agent from draining your account overnight.</p>
+      only take a card, and nothing stops an agent from draining your account overnight.</p>
     <div class="prob reveal">
       <div class="cell">
         <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Agents can't hold a card</h3>
@@ -343,12 +346,12 @@
     <p class="kicker">How it works</p>
     <h2 class="h2">Four steps, one on-chain transaction per call.</h2>
     <p class="p">The agent never leaves its budget. Every fulfilled request is a real settlement on
-      Casper - and Zug's instant finality is what makes per-call settlement viable.</p>
+      Casper, and Zug's instant finality is what makes per-call settlement viable.</p>
     <div class="steps reveal">
       <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>It points at our endpoint instead of the provider, holding a Casper key and a token budget.</p></div>
       <div class="step"><div class="n">02</div><h4>402 + price</h4><p>The rail answers <span class="mono accent">402</span> with a per-call price in our CEP-18 token.</p></div>
       <div class="step"><div class="n">03</div><h4>Sign &amp; settle</h4><p>The agent signs an x402 authorization; the facilitator settles it on Casper in seconds.</p></div>
-      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API and returns the result - with an on-chain receipt.</p></div>
+      <div class="step"><div class="n">04</div><h4>Fulfilled</h4><p>The rail forwards to the real API and returns the result, with an on-chain receipt.</p></div>
     </div>
   </div>
 </section>
@@ -358,13 +361,13 @@
     <p class="kicker">Live demo</p>
     <h2 class="h2">Watch an agent hit the wall.</h2>
     <p class="p">Claude writes a script. The agent pays per line and goes silent the instant its
-      balance runs out. Overspend isn't discouraged - it's impossible. Pick a budget and run it yourself.</p>
+      balance runs out. Overspend isn't discouraged. It's impossible. Pick a budget and run it yourself.</p>
     <div class="demolink reveal">
       <div class="demolink-pre mono">
-        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">- 0.10 X402</span></span>
-        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">- 0.10 X402</span></span>
-        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">- 0.10 X402</span></span>
-        <span class="dl-row dl-stop">insufficient_balance - agent goes silent</span>
+        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">0.056 X402</span></span>
+        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">0.052 X402</span></span>
+        <span class="dl-row"><span class="dl-ok">settle ok</span> speak 200 <span class="dl-faint">0.057 X402</span></span>
+        <span class="dl-row dl-stop">insufficient_balance, agent goes silent</span>
       </div>
       <div class="demolink-cta">
         <h3>A voice agent on a budget</h3>
@@ -387,7 +390,7 @@
         <div class="big">~2s</div>
         <h4>Deterministic instant finality (Zug)</h4>
         <p>Per-call on-chain settlement is only viable with deterministic finality. On a probabilistic
-          chain you'd wait blocks per request - here the agent acts and knows it settled. Every API
+          chain you would wait blocks per request. Here the agent acts and knows it settled. Every API
           call becomes one real, final transaction.</p>
       </div>
       <div class="tile">
@@ -411,7 +414,7 @@
     <h2 class="h2">A drop-in endpoint for any agent.</h2>
     <div class="integ">
       <p class="p">Point your agent's HTTP client at the rail and fund a Casper key. The x402 client
-        signs payments automatically - your code just calls the endpoint and gets the result back,
+        signs payments automatically, so your code just calls the endpoint and gets the result back,
         bounded by a balance it can't exceed.</p>
       <div class="term">
         <div class="bar"><i></i><i></i><i></i><span>agent.ts</span></div>
