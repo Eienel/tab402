@@ -11,70 +11,130 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Rye&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0b0b0d;--panel:#141417;--panel2:#1a1a20;--line:#27272e;--text:#ededf0;
-    --muted:#9595a0;--faint:#62626c;--accent:#e8412f;--good:#36cf9b;--warn:#e8b339;
-    --brass:#c9962b;
-    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;--sans:"Outfit",system-ui,sans-serif;
+    --bg:#060608;--panel:#111114;--panel2:#17171b;--line:#232329;
+    --text:#ededf0;--muted:#9a9aa4;--faint:#5f5f68;
+    --accent:#e8412f;--accent-soft:rgba(232,65,47,.12);--accent-line:rgba(232,65,47,.32);
+    --logo:#e8412f;--smoke:#eef0f2;
+    --good:#36cf9b;--warn:#e8b339;--brass:#c9962b;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+    --sans:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --apple:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
     --display:"Rye",Georgia,serif;
     --ease:cubic-bezier(.16,1,.3,1);
   }
   /* faint vintage grain - fixed, pointer-events-none (perf-safe) */
-  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   html,body{overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);letter-spacing:-.01em}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
   a{color:var(--accent);text-decoration:none}
   .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
   .mono{font-family:var(--mono)}
-  nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(14px);background:rgba(11,11,13,.72);border-bottom:1px solid var(--line)}
-  .navin{display:flex;align-items:center;justify-content:space-between;height:62px}
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:21px;letter-spacing:.01em}
-  .mark{width:28px;height:28px;object-fit:contain;flex:none;filter:drop-shadow(0 0 7px rgba(232,65,47,.4))}
-  .badge{color:var(--brass)}
-  .navcta{display:flex;align-items:center;gap:20px}
-  .navlink{color:var(--muted);font-size:14px;font-weight:500}
-  .navlink:hover{color:var(--text)}
-  h1{font-size:30px;letter-spacing:-.03em;margin:34px 0 4px;font-weight:600}
-  .lede{color:var(--muted);margin:0 0 28px}
+  .accent{color:var(--accent)}
+
+  /* nav: spread wide across the top, shrinks to a floating pill on scroll */
+  nav{position:fixed;inset:0 0 auto 0;z-index:70;display:flex;justify-content:center;
+    padding:20px 24px;transition:padding .45s var(--ease);pointer-events:none}
+  .navbar{pointer-events:auto;width:100%;max-width:1180px;display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:8px 10px 8px 8px;border:1px solid transparent;border-radius:999px;
+    transition:max-width .55s var(--ease),background .45s var(--ease),border-color .45s var(--ease),box-shadow .45s var(--ease),padding .45s var(--ease)}
+  nav.shrunk{padding:12px 24px}
+  nav.shrunk .navbar{max-width:74%;background:rgba(9,9,12,.6);backdrop-filter:blur(18px) saturate(1.3);
+    border-color:rgba(255,255,255,.09);box-shadow:0 16px 46px -24px rgba(0,0,0,.9);padding:8px 10px 8px 16px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:20px;color:var(--smoke);letter-spacing:.01em}
+  .mark{width:28px;height:28px;object-fit:contain;flex:none;filter:drop-shadow(0 0 8px rgba(232,65,47,.5))}
+  .navcta{display:flex;align-items:center;gap:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:999px;
+    font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);
+    color:var(--smoke);cursor:pointer;transition:transform .15s var(--ease),border-color .25s,background .25s,filter .2s}
+  .btn:hover{border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.09)}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.primary{background:var(--logo);border-color:var(--logo);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:rgba(255,255,255,.05)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  @media(max-width:560px){nav.shrunk .navbar{max-width:94%}}
+
+  /* header */
+  header.intro{padding:128px 0 8px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--logo);margin:0 0 16px;
+    display:inline-flex;align-items:center;gap:9px}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(54,207,155,.5);animation:pulse 2.4s var(--ease) infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(54,207,155,.45)}70%{box-shadow:0 0 0 8px rgba(54,207,155,0)}100%{box-shadow:0 0 0 0 rgba(54,207,155,0)}}
+  h1{font-family:var(--apple);font-size:clamp(30px,5vw,48px);line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:0 0 14px;color:var(--smoke)}
+  h1 em{font-style:normal;color:var(--logo)}
+  .lede{color:var(--muted);font-size:clamp(15px,2.2vw,18px);max-width:60ch;margin:0 0 30px;line-height:1.6}
   /* stats */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:26px}
-  .stat{padding:18px 22px;border-right:1px solid var(--line)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:26px}
+  .stat{padding:20px 24px;border-right:1px solid var(--line);transition:background .35s var(--ease)}
+  .stat:hover{background:rgba(255,255,255,.018)}
   .stat:last-child{border-right:none}
   .stat .k{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
-  .stat .v{font-family:var(--mono);font-size:22px;margin-top:6px}
+  .stat .v{font-family:var(--mono);font-size:24px;margin-top:6px;font-weight:500;color:var(--text)}
   .grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:20px;align-items:start}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 20px 44px -26px rgba(0,0,0,.55)}
-  .card h2{font-size:15px;margin:0 0 14px;font-weight:600}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:9px;font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:transform .15s var(--ease),filter .2s}
-  .btn:hover{filter:brightness(1.07)} .btn:active{transform:translateY(1px) scale(.99)}
-  .btn.ghost{background:var(--panel2);border-color:var(--line);color:var(--text)}
-  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;
+    transition:border-color .3s var(--ease)}
+  .card:hover{border-color:var(--accent-line)}
+  .card h2{font-family:var(--apple);font-size:16px;margin:0 0 14px;font-weight:600;letter-spacing:-.02em}
   .kv{font-family:var(--mono);font-size:12.5px;line-height:2;word-break:break-all}
   .kv .lbl{color:var(--faint);display:inline-block;min-width:90px}
   .kv .val{color:var(--text)}
-  pre{background:#08080a;border:1px solid var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.7;overflow-x:auto;color:#c9c9d2;margin:12px 0 0}
+  pre{background:#08080a;border:1px solid var(--line);border-radius:12px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.7;overflow-x:auto;color:#c9c9d2;margin:12px 0 0}
   .row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);font-family:var(--mono);font-size:12.5px}
   .row a{color:var(--good)} .row .amt{color:var(--accent)}
   .empty{color:var(--faint);font-family:var(--mono);font-size:13px;padding:18px 0}
   .meter{height:10px;background:#08080a;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:10px 0 6px}
   .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#2aa);transition:width .5s var(--ease)}
-  .hint{color:var(--muted);font-size:13px;margin-top:6px}
-  .pill{font-family:var(--mono);font-size:11px;color:var(--brass);border:1px solid color-mix(in srgb,var(--brass) 40%,var(--line));border-radius:999px;padding:3px 9px}
+  .hint{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.55}
+  .pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);
+    border:1px solid color-mix(in srgb,var(--brass) 40%,var(--line));border-radius:999px;padding:3px 10px}
+  /* dark sections carry the same graph grid, in white, full-bleed across the body */
+  .darksec{position:relative;overflow:hidden}
+  .darksec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+    background-size:44px 44px}
+  .darksec>*{position:relative;z-index:1}
+  /* light band: the black↔white↔logo rhythm from the landing */
+  .lightsec{position:relative;background:#f5f5f6;color:#131316;border-top:1px solid var(--line);
+    padding:80px 0 88px;margin-top:48px;overflow:hidden}
+  .lightsec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(20,20,25,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(20,20,25,.08) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(120% 85% at 50% 0,#000,transparent 72%);
+    mask-image:radial-gradient(120% 85% at 50% 0,#000,transparent 72%)}
+  .lightsec .wrap{position:relative;z-index:1}
+  .lightsec .kicker{color:var(--logo)}
+  .lightsec .bandh{font-family:var(--apple);font-size:clamp(24px,3.4vw,34px);letter-spacing:-.035em;
+    font-weight:800;color:#0e0e11;margin:0 0 10px}
+  .lightsec .bandh em{font-style:normal;color:var(--logo)}
+  .lightsec .bandp{color:#54545c;font-size:15.5px;max-width:60ch;margin:0 0 32px;line-height:1.6}
+  .lightsec .card{color:var(--text);box-shadow:0 30px 60px -34px rgba(20,20,25,.5)}
   @media(max-width:820px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.stat{border-right:none;border-bottom:1px solid var(--line)}.stat:last-child{border-bottom:none}}
-  @media(max-width:560px){.wrap{padding:0 16px}h1{font-size:25px}.card{padding:18px}.navcta{gap:14px}.kv .lbl{min-width:74px}}
+  @media(max-width:560px){.wrap{padding:0 16px}header.intro{padding:104px 0 4px}.card{padding:18px}.kv .lbl{min-width:74px}.navcta .hide-sm{display:none}}
 </style>
 </head>
 <body>
 <div class="grain"></div>
-<nav><div class="wrap navin">
-  <a class="brand" href="/"><img class="mark" src="/logo.png" alt="Tab logo" /> Tab</a>
-  <div class="navcta"><a class="navlink" href="/demo">Live demo</a><a class="navlink" href="https://eienel.github.io/tab402/" target="_blank" rel="noopener">Roadmap</a><a class="navlink" href="/">Home</a></div>
-</div></nav>
+<nav id="nav">
+  <div class="navbar">
+    <a class="brand" href="/"><img class="mark" src="/logo.png" alt="Tab logo" /> Tab</a>
+    <div class="navcta">
+      <a class="btn ghost hide-sm" href="/">Home</a>
+      <a class="btn ghost" href="https://eienel.github.io/tab402/" target="_blank" rel="noopener">Roadmap</a>
+      <a class="btn primary" href="/demo">Live demo</a>
+    </div>
+  </div>
+</nav>
 
+<section class="darksec">
 <div class="wrap">
-  <p style="font-family:var(--display);color:var(--brass);font-size:13px;letter-spacing:.05em;margin:34px 0 0">run a tab · settle on-chain</p>
-  <h1 style="margin-top:6px">Developer dashboard</h1>
-  <p class="lede">Create a Tab key, fund it, and point your agent at the rail. Every call settles on Casper.</p>
+  <header class="intro">
+    <span class="kicker"><span class="pulse"></span> run a tab · settle on-chain</span>
+    <h1>Developer <em>dashboard.</em></h1>
+    <p class="lede">Create a Tab key, fund it, and point your agent at the rail. Every call settles on Casper.</p>
+  </header>
 
   <div class="stats">
     <div class="stat"><div class="k">Token</div><div class="v" id="s-token">-</div></div>
@@ -85,7 +145,7 @@
   <div class="grid">
     <div class="card" id="keycard">
       <h2>1 · Get your Tab key</h2>
-      <button class="btn" id="provision" onclick="provision()">Create key</button>
+      <button class="btn primary" id="provision" onclick="provision()">Create key</button>
       <p class="hint">Generates a Casper agent identity. Testnet only - keep the key file safe.</p>
       <div id="keydetails" style="display:none">
         <div class="kv" style="margin-top:14px">
@@ -95,7 +155,7 @@
         </div>
         <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
           <button class="btn ghost" onclick="downloadPem()">Download key (.pem)</button>
-          <button class="btn" id="fundbtn" onclick="fund()">Fund 0.5 X402</button>
+          <button class="btn primary" id="fundbtn" onclick="fund()">Fund 0.5 X402</button>
         </div>
         <div id="fundresult" class="hint"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px;gap:10px">
@@ -117,14 +177,22 @@
     </div>
   </div>
 
-  <div class="grid" style="margin-top:20px;margin-bottom:40px">
-    <div class="card">
-      <h2>Try it - paid TTS, no wallet needed</h2>
+</div>
+</section>
+
+<section class="lightsec">
+  <div class="wrap">
+    <p class="kicker"><span class="pulse"></span> Try it live</p>
+    <h2 class="bandh">Pay for a sentence, <em>settled on Casper.</em></h2>
+    <p class="bandp">No wallet needed — our treasury key pays the x402 invoice on-chain, Deepgram speaks it, and every settlement lands in the live feed below.</p>
+    <div class="grid" style="margin-bottom:0">
+      <div class="card">
+        <h2>Paid text-to-speech</h2>
       <p class="hint" style="margin-top:0">Type a sentence. Our treasury key pays the x402 invoice on Casper, Deepgram speaks it, and you download the MP3. Watch the payment land in the live feed.</p>
       <textarea id="say" maxlength="300" rows="3" placeholder="Hello. This sentence was paid for on-chain."
         style="width:100%;background:#08080a;border:1px solid var(--line);border-radius:10px;color:var(--text);font-family:var(--sans);font-size:14px;padding:12px;resize:vertical"></textarea>
       <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
-        <button class="btn" id="saybtn" onclick="demoSpeak()">Speak it (pays on-chain)</button>
+        <button class="btn primary" id="saybtn" onclick="demoSpeak()">Speak it (pays on-chain)</button>
         <span class="hint" id="sayout"></span>
       </div>
       <div id="playerwrap" style="display:none;margin-top:14px">
@@ -138,9 +206,14 @@
       <div id="feed"><div class="empty">No settlements yet.</div></div>
     </div>
   </div>
-</div>
+</section>
 
 <script>
+  // nav: wide across the top -> floating pill on scroll (matches the landing)
+  (function(){ const n=document.getElementById('nav'); if(!n) return;
+    const s=()=>n.classList.toggle('shrunk', window.scrollY>30); s();
+    window.addEventListener('scroll', s, {passive:true}); })();
+
   const fmt = m => (Number(m)/1e9).toFixed(2);
   let key = null, funded = 0, ceiling = 0.5, poll = null;
 

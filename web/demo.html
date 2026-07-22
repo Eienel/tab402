@@ -124,6 +124,39 @@
   .foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
   .foot a{color:var(--muted)}.foot a:hover{color:var(--text)}
 
+  /* dark sections carry the same graph grid, in white, full-bleed across the body */
+  .darksec{position:relative;overflow:hidden}
+  .darksec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+    background-size:44px 44px}
+  .darksec>*{position:relative;z-index:1}
+
+  /* ===== light interludes: the black↔white↔logo rhythm from the landing ===== */
+  .lightsec{position:relative;background:#f5f5f6;color:#131316;border-top:1px solid rgba(20,20,25,.07);
+    padding:88px 0;overflow:hidden;margin-top:52px}
+  .lightsec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(20,20,25,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(20,20,25,.08) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(120% 85% at 50% 0,#000,transparent 72%);
+    mask-image:radial-gradient(120% 85% at 50% 0,#000,transparent 72%)}
+  .lightsec .wrap{position:relative;z-index:1}
+  .lightsec .kicker{color:var(--logo)}
+  .lightsec h1{color:#0e0e11}
+  .lightsec h1 em{color:var(--logo)}
+  .lightsec .sub{color:#54545c}
+  .lightsec .accent,.lightsec .mono.accent{color:#b5361f}
+  /* light column-divided steps */
+  .lightsec .steps{border-top-color:rgba(20,20,25,.14)}
+  .lightsec .step{border-right-color:rgba(20,20,25,.1);border-bottom-color:rgba(20,20,25,.1)}
+  .lightsec .step .n{color:var(--logo)}
+  .lightsec .step h4{color:#131316}
+  .lightsec .step p{color:#54545c}
+  .lightsec .realnote{color:#54545c}
+  .lightsec .realnote a{color:var(--logo);border-bottom:1px solid rgba(232,65,47,.4)}
+  /* dark interactive panels read as premium cards inside the light band */
+  .lightsec .panel{box-shadow:0 30px 60px -34px rgba(20,20,25,.5)}
+  .lightsec .lbl{color:var(--faint)}
+
   /* ---- responsive ---- */
   @media(max-width:860px){
     .stage{grid-template-columns:1fr;gap:18px}
@@ -156,6 +189,7 @@
   </div>
 </nav>
 
+<section class="darksec">
 <div class="wrap">
   <header class="intro">
     <span class="kicker"><span class="pulse"></span> Live demo</span>
@@ -192,7 +226,11 @@
     </div>
   </div>
 
-  <section class="how">
+</div>
+</section>
+
+<section class="lightsec">
+  <div class="wrap">
     <p class="kicker">What just happened</p>
     <div class="steps">
       <div class="step"><div class="n">01</div><h4>Agent calls the rail</h4><p>It points at our endpoint instead of the provider, holding a Casper key and a token budget.</p></div>
@@ -203,11 +241,13 @@
     <p class="realnote">Every line you hear is real: the payment settles on Casper testnet (click a tx link to verify on the
       explorer) and the audio comes back from the paid rail. Provision your own key in the
       <a href="/dashboard">developer dashboard</a> or read the <a href="https://github.com/Eienel/tab402" target="_blank" rel="noopener">integration on GitHub</a>.</p>
-  </section>
+  </div>
+</section>
 
-  <section class="how" style="border-top:1px solid var(--line)">
+<section class="lightsec" style="margin-top:0;border-top:1px solid rgba(20,20,25,.12)">
+  <div class="wrap">
     <p class="kicker">Cost-aware routing</p>
-    <h1 style="font-size:clamp(24px,4vw,34px)">One endpoint. The rail picks the model.</h1>
+    <h1 style="font-size:clamp(24px,4vw,36px);margin-bottom:14px">One endpoint. The rail <em>picks the model.</em></h1>
     <p class="sub" style="margin-bottom:8px">Send a prompt and the rail routes it to the cheapest model that should still do the
       job, prices the x402 charge to <em>that</em> model, and shows what it saved versus always calling Pro. Live quotes from the rail.</p>
     <div class="stage" style="margin-top:26px">
@@ -227,8 +267,8 @@
         <span class="seed">Type a prompt — the rail shows which model it picks and the price.</span>
       </div>
     </div>
-  </section>
-</div>
+  </div>
+</section>
 
 <footer>
   <div class="wrap foot">
