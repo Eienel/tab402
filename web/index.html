@@ -169,6 +169,43 @@
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
   .reveal.in{opacity:1;transform:none}
 
+  /* ===== page 2: white-smoke "rails" showcase ===== */
+  html{scroll-snap-type:y proximity}
+  .hero,.lightsec{scroll-snap-align:start}
+  .lightsec{position:relative;background:#f3f2ef;color:#161619;padding:120px 0 130px;overflow:hidden}
+  .lightsec .wrap{position:relative;z-index:2}
+  .cloud2{position:absolute;z-index:1;top:-8%;right:-6%;width:min(58vw,740px);pointer-events:none;
+    mix-blend-mode:multiply;opacity:.4;
+    -webkit-mask-image:radial-gradient(60% 60% at 60% 42%,#000 40%,transparent 82%);
+    mask-image:radial-gradient(60% 60% at 60% 42%,#000 40%,transparent 82%)}
+  .lighthead{max-width:820px}
+  .kicker2{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--logo);margin:0 0 16px}
+  .lighth2{font-family:var(--apple);font-size:clamp(30px,4.6vw,54px);line-height:1.03;letter-spacing:-.035em;
+    font-weight:800;margin:0 0 18px;max-width:15ch}
+  .lighth2 .red{color:var(--logo)}
+  .lightp{color:#43434b;font-size:clamp(16px,1.7vw,19px);line-height:1.6;max-width:62ch;margin:0}
+  .bento2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:54px}
+  .b-wide{grid-column:1 / -1}
+  .bcard{background:#fff;border:1px solid rgba(20,20,25,.08);border-radius:26px;padding:30px 32px;
+    box-shadow:0 24px 46px -28px rgba(20,20,25,.16);position:relative;overflow:hidden;
+    transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+  .bcard:hover{transform:translateY(-3px);box-shadow:0 34px 60px -30px rgba(20,20,25,.22)}
+  .tagn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--logo);margin:0 0 14px;display:block}
+  .bcard h4{font-family:var(--apple);margin:0 0 9px;font-size:20px;font-weight:700;letter-spacing:-.02em;color:#141418;max-width:22ch}
+  .bcard p{margin:0;color:#54545c;font-size:15px;line-height:1.62;max-width:54ch}
+  .chips2{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
+  .chip2{font-family:var(--mono);font-size:12.5px;padding:8px 13px;border-radius:999px;border:1px solid rgba(20,20,25,.12);color:#6a6a72;background:#fafafa}
+  .chip2.on{border-color:var(--logo);color:var(--logo);background:rgba(232,65,47,.06);font-weight:600;animation:onpulse 2.6s var(--ease) infinite}
+  @keyframes onpulse{0%,100%{box-shadow:0 0 0 0 rgba(232,65,47,.18)}50%{box-shadow:0 0 0 6px rgba(232,65,47,0)}}
+  .savepill{margin-top:16px;font-family:var(--mono);font-size:13px;color:#26262b}
+  .savepill b{color:var(--logo)}
+  .rope{position:absolute;left:50%;top:0;width:2px;height:100%;transform:translateX(-50%) scaleY(var(--rope,0));
+    transform-origin:top center;background:linear-gradient(var(--logo),rgba(232,65,47,0));z-index:1;pointer-events:none;opacity:.55}
+  .reveal2{opacity:0;transform:translateY(48px) scale(.985);
+    transition:opacity .9s cubic-bezier(.34,1.28,.5,1),transform .9s cubic-bezier(.34,1.28,.5,1)}
+  .reveal2.in{opacity:1;transform:none}
+  @media(max-width:760px){.bento2{grid-template-columns:1fr}.b-wide{grid-column:auto}.lightsec{padding:82px 0 90px}.rope{display:none}}
+
   /* ---- mobile ---- */
   @media(max-width:600px){
     .wrap{padding:0 18px}
@@ -217,7 +254,7 @@
         <span class="morph m0" id="morph">tab</span>
       </div>
       <div class="hero-copy">
-        <p>Fund it once. Your agent pays per call from an on-chain balance — capped at a ceiling it physically can't exceed.</p>
+        <p>One endpoint your agent hits to pay for any API. It settles each call on Casper, routes to the cheapest model that still does the job, and never spends past its cap.</p>
         <div class="cta">
           <a class="btn primary" href="/demo">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -237,6 +274,42 @@
     <b>Casper&nbsp;2.0</b><b>x402</b><b>CEP-18</b><b>Deepgram</b><b>Claude</b><b>Odra</b>
   </div>
 </div>
+
+<section class="lightsec" id="rails">
+  <div class="rope" aria-hidden="true"></div>
+  <img class="cloud2" src="/hero-cloud.png" alt="" />
+  <div class="wrap">
+    <div class="lighthead reveal2">
+      <p class="kicker2">the primitive</p>
+      <h2 class="lighth2">A smart rail between your agent and every <span class="red">API</span>.</h2>
+      <p class="lightp">Point your agent at Tab instead of the provider. It prices each call at real cost, routes to the cheapest model that still does the job, settles it on Casper, and stops at the cap you set.</p>
+    </div>
+    <div class="bento2 reveal2">
+      <div class="bcard b-wide">
+        <span class="tagn">routing</span>
+        <h4>It picks the model, so your agent doesn't have to.</h4>
+        <p>Every prompt is judged and sent to the cheapest model that still clears the bar. A quick fact goes to Flash-Lite; real reasoning goes to Pro. The on-chain charge is priced to whatever it picked.</p>
+        <div class="chips2"><span class="chip2">Flash-Lite</span><span class="chip2 on">Flash</span><span class="chip2">Pro</span></div>
+        <div class="savepill">routed to <b>Flash</b> for this call, <b>saved 78%</b> versus always calling Pro</div>
+      </div>
+      <div class="bcard">
+        <span class="tagn">metering</span>
+        <h4>You pay for the work, not a flat toll.</h4>
+        <p>Speech is priced by the character, models by the token. The quote in each 402 tracks the real cost driver, so a short call costs less than a long one.</p>
+      </div>
+      <div class="bcard">
+        <span class="tagn">guardrail</span>
+        <h4>A ceiling it cannot cross.</h4>
+        <p>The balance is the limit. When the next call costs more than what is left, it simply does not happen. No overdraft, no surprise bill.</p>
+      </div>
+      <div class="bcard b-wide">
+        <span class="tagn">settlement</span>
+        <h4>One real on-chain settlement per call.</h4>
+        <p>Each paid request is a final transfer on Casper testnet in about two seconds, verifiable on the explorer, with no invoice to take on trust. Zug finality is what makes per-call settlement viable.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="problem">
   <div class="wrap">
@@ -382,6 +455,22 @@ writeFileSync(<span class="g">"line.mp3"</span>, <span class="r">await</span> re
   const onScroll = () => navEl.classList.toggle('shrunk', window.scrollY > 30);
   onScroll();
   window.addEventListener('scroll', onScroll, {passive:true});
+
+  // page 2: spring-in reveal (the "jump in") + a rope that draws on scroll
+  const io2 = new IntersectionObserver((es)=>es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');io2.unobserve(e.target);} }), {threshold:.2});
+  document.querySelectorAll('.reveal2').forEach(el=>io2.observe(el));
+  const light = document.querySelector('.lightsec');
+  if(light){
+    let ticking = false;
+    const drawRope = () => {
+      const r = light.getBoundingClientRect();
+      const p = Math.min(Math.max((window.innerHeight - r.top) / (window.innerHeight * 0.9), 0), 1);
+      light.style.setProperty('--rope', p.toFixed(3));
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => { if(!ticking){ requestAnimationFrame(drawRope); ticking = true; } }, {passive:true});
+    drawRope();
+  }
 
   // morphing keyword: the word itself cycles, and its style cycles
   // black -> white underlined -> logo-red (Apple system font throughout)
