@@ -166,12 +166,18 @@
   }
   @media(max-width:560px){
     .wrap{padding:0 16px}
-    header.intro{padding:96px 0 4px}
+    header.intro{padding:104px 0 4px}
     .navcta .btn.hide-sm{display:none}
+    .navbar{gap:10px}
+    .btn{padding:9px 13px;font-size:13.5px}
     .panel{padding:18px}
     .steps{grid-template-columns:1fr}
     .step:nth-child(odd){border-right:none;padding-right:0}
     .ledger{min-height:0}
+    /* tighten the light/dark bands so they don't eat the small screen */
+    .lightsec{padding:56px 0;margin-top:0}
+    .lightsec .steps{margin-top:20px}
+    .lightsec .realnote{margin-top:22px}
   }
 </style>
 </head>
