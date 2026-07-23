@@ -112,7 +112,19 @@
   .lightsec .bandp{color:#54545c;font-size:15.5px;max-width:60ch;margin:0 0 32px;line-height:1.6}
   .lightsec .card{color:var(--text);box-shadow:0 30px 60px -34px rgba(20,20,25,.5)}
   @media(max-width:820px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.stat{border-right:none;border-bottom:1px solid var(--line)}.stat:last-child{border-bottom:none}}
-  @media(max-width:560px){.wrap{padding:0 16px}header.intro{padding:104px 0 4px}.card{padding:18px}.kv .lbl{min-width:74px}.navcta .hide-sm{display:none}}
+  @media(max-width:560px){
+    .wrap{padding:0 16px}
+    header.intro{padding:104px 0 4px}
+    .navbar{gap:10px}
+    .btn{padding:9px 13px;font-size:13.5px}
+    .stat{padding:16px 18px}
+    .card{padding:18px}
+    .kv .lbl{min-width:74px}
+    .navcta .hide-sm{display:none}
+    /* tighten the light band on small screens */
+    .lightsec{padding:52px 0 60px;margin-top:0}
+    .lightsec .bandp{margin-bottom:24px}
+  }
 </style>
 </head>
 <body>
