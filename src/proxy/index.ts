@@ -447,16 +447,25 @@ async function geminiComplete(
       stub: true,
     };
   }
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${GEMINI_KEY}`;
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: maxOut },
-    }),
-    signal: AbortSignal.timeout(30000),
-  });
+  const call = (m: string) =>
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${GEMINI_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: maxOut },
+      }),
+      signal: AbortSignal.timeout(30000),
+    });
+  // Model ids get retired (e.g. the 2.5 family 404'd for new keys). If the
+  // routed model is gone, fall back once to a known-good current model so a
+  // paid call still returns an answer instead of a hard failure.
+  let r = await call(apiModel);
+  const fallback = process.env.GEMINI_MODEL_FALLBACK || "gemini-3.5-flash";
+  if (r.status === 404 && apiModel !== fallback) {
+    console.warn(`  gemini model ${apiModel} unavailable (404) - falling back to ${fallback}`);
+    r = await call(fallback);
+  }
   if (!r.ok) throw new Error(`gemini ${r.status}: ${await r.text()}`);
   const j = (await r.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
