@@ -107,6 +107,8 @@
   .tier-pro{color:var(--accent)} .tier-pro .dot{background:var(--accent)}
   .savebar{height:8px;border-radius:999px;background:#08080a;border:1px solid var(--line);overflow:hidden;margin:6px 0 2px}
   .savebar>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#2aa);transition:width .5s var(--ease)}
+  .answer{background:#08080a;border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin:14px 0;
+    font-size:14px;line-height:1.6;color:var(--text);white-space:pre-wrap;max-height:280px;overflow:auto}
 
   /* explainer */
   .how{border-top:1px solid var(--line);margin-top:40px;padding:40px 0 0}
@@ -255,7 +257,7 @@
     <p class="kicker">Cost-aware routing</p>
     <h1 style="font-size:clamp(24px,4vw,36px);margin-bottom:14px">One endpoint. The rail <em>picks the model.</em></h1>
     <p class="sub" style="margin-bottom:8px">Send a prompt and the rail routes it to the cheapest model that should still do the
-      job, prices the x402 charge to <em>that</em> model, and shows what it saved versus always calling Pro. Live quotes from the rail.</p>
+      job and prices the x402 charge to <em>that</em> model. Then run it — the rail pays the call on-chain and hands back the model's answer, crediting the difference between the reserved ceiling and the metered actual.</p>
     <div class="stage" style="margin-top:26px">
       <div class="panel controls">
         <div class="field">
@@ -267,6 +269,11 @@
           <button class="chip" data-p="What is the capital of France?"><b>Simple</b>a quick fact</button>
           <button class="chip" data-p="Write a TypeScript function that debounces an async API call."><b>Code</b>a build task</button>
           <button class="chip" data-p="Analyze the tradeoffs between proof-of-stake and proof-of-work, and explain why deterministic finality matters for per-call machine payments."><b>Reasoning</b>a hard problem</button>
+        </div>
+        <div class="runrow" style="margin-top:18px">
+          <button class="btn primary" id="runllm" onclick="runComplete()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run it (pays on-chain)
+          </button>
         </div>
       </div>
       <div class="panel" id="routeout">
@@ -444,6 +451,40 @@
   document.querySelectorAll('#examples .chip').forEach(c =>
     c.addEventListener('click', () => { promptEl.value = c.dataset.p; quoteRoute(); }));
   quoteRoute(); // initial render for the default prompt
+
+  // ---- actually pay + get the answer back from the routed Gemini model ----
+  function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function renderAnswer(j, tx){
+    const m = j._tab || {};
+    const settled = tx
+      ? '<a href="https://testnet.cspr.live/transaction/' + tx + '" target="_blank" rel="noopener" style="color:var(--good)">settled ✓ tx ' + tx.slice(0,10) + '…</a>'
+      : (m.mode === 'stub' ? '<span style="color:var(--warn)">stub mode — set GEMINI_API_KEY on the rail for live output</span>' : 'settled ✓');
+    return '<div class="meterhead" style="margin-bottom:12px"><span>routed to</span>'
+      + '<span class="modeltag ' + tierClass(m.model || '') + '"><span class="dot"></span>' + (m.modelLabel || '?') + '</span></div>'
+      + '<div class="qrow"><span>why</span><span style="color:var(--text)">' + (m.reason || '') + '</span></div>'
+      + '<div class="answer">' + escapeHtml(j.text || '') + '</div>'
+      + '<div class="qrow"><span>paid ceiling</span><b class="mono accent">' + m.reservedX402 + ' X402</b></div>'
+      + '<div class="qrow"><span>metered actual</span><b class="mono">' + m.actualX402 + ' X402</b></div>'
+      + '<div class="qrow"><span>credited back</span><b class="mono" style="color:var(--good)">' + m.creditX402 + ' X402</b></div>'
+      + '<div class="qrow"><span>saved vs always-Pro</span><b class="mono" style="color:var(--good)">' + m.savedVsProX402 + ' X402</b></div>'
+      + '<p class="seed" style="margin-top:12px">' + settled + '</p>';
+  }
+  window.runComplete = async function(){
+    const text = (promptEl.value || '').trim();
+    if(!text){ routeout.innerHTML = SEED_MSG; return; }
+    const btn = document.getElementById('runllm'); btn.disabled = true;
+    routeout.innerHTML = '<span class="seed">Signing x402 authorization · settling on Casper (~10-20s)…</span>';
+    try{
+      const r = await fetch('/api/demo/complete', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ prompt: text })
+      });
+      const tx = settleTx(r);
+      const j = await r.json();
+      if(!r.ok){ routeout.innerHTML = '<span class="seed">' + ((j && (j.hint || j.error)) || 'Call failed') + '</span>'; return; }
+      routeout.innerHTML = renderAnswer(j, tx);
+    }catch(e){ routeout.innerHTML = '<span class="seed">Rail unavailable — try again.</span>'; }
+    finally{ btn.disabled = false; }
+  };
 </script>
 </body>
 </html>
