@@ -34,21 +34,21 @@ export function models(): Record<GeminiModel, ModelSpec> {
   return {
     "gemini-flash-lite": {
       id: "gemini-flash-lite",
-      apiModel: process.env.GEMINI_MODEL_LITE || "gemini-2.5-flash-lite",
+      apiModel: process.env.GEMINI_MODEL_LITE || "gemini-3.5-flash-lite",
       inMotesPerTok: rate("RATE_LITE_IN", 8_000),
       outMotesPerTok: rate("RATE_LITE_OUT", 40_000),
       label: "Flash-Lite",
     },
     "gemini-flash": {
       id: "gemini-flash",
-      apiModel: process.env.GEMINI_MODEL_FLASH || "gemini-2.5-flash",
+      apiModel: process.env.GEMINI_MODEL_FLASH || "gemini-3.5-flash",
       inMotesPerTok: rate("RATE_FLASH_IN", 24_000),
       outMotesPerTok: rate("RATE_FLASH_OUT", 200_000),
       label: "Flash",
     },
     "gemini-pro": {
       id: "gemini-pro",
-      apiModel: process.env.GEMINI_MODEL_PRO || "gemini-2.5-pro",
+      apiModel: process.env.GEMINI_MODEL_PRO || "gemini-3-pro",
       inMotesPerTok: rate("RATE_PRO_IN", 120_000),
       outMotesPerTok: rate("RATE_PRO_OUT", 900_000),
       label: "Pro",
