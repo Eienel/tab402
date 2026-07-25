@@ -249,6 +249,58 @@ app.post("/api/demo/speak", async (req, res) => {
   }
 });
 
+// House-paid LLM completion: the treasury pays the x402 ceiling to the routed
+// Gemini endpoint and we return the model's answer plus the on-chain settlement
+// header, so the demo can show a real paid call (routing → pay → answer).
+app.post("/api/demo/complete", async (req, res) => {
+  const prompt = ((req.body?.prompt as string) || "").trim();
+  if (!prompt) return res.status(400).json({ error: "Body must include non-empty 'prompt'." });
+  if (prompt.length > 2000)
+    return res.status(400).json({ error: "Demo prompt is capped at 2000 characters." });
+  if (demoInFlight >= 3)
+    return res.status(429).json({ error: "Demo is busy - try again in a few seconds." });
+  const hint = typeof req.body?.model === "string" ? (req.body.model as string) : undefined;
+
+  demoInFlight++;
+  try {
+    const target = `http://127.0.0.1:${cfg.port}/v1/complete`;
+    const init = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, model: hint }),
+    };
+    let apiRes: Response;
+    if (cfg.devBypass) {
+      res.set("X-DEMO-MODE", "payment-bypassed");
+      apiRes = await fetch(target, init);
+    } else {
+      const pay = await getDemoFetch();
+      apiRes = await pay(target, init);
+    }
+    const settle =
+      apiRes.headers.get("PAYMENT-RESPONSE") || apiRes.headers.get("X-PAYMENT-RESPONSE");
+    if (settle) res.set("PAYMENT-RESPONSE", settle);
+    const body = (await apiRes.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!apiRes.ok) {
+      console.error("Demo complete failed", apiRes.status, JSON.stringify(body));
+      const hintMsg =
+        apiRes.status === 402
+          ? "payment rejected - check treasury X402/CSPR balance and facilitator logs"
+          : undefined;
+      return res
+        .status(502)
+        .json({ error: "demo_complete_failed", status: apiRes.status, detail: body, hint: hintMsg });
+    }
+    res.json(body);
+    console.log(`🎁 demo completion fulfilled: "${prompt.slice(0, 50)}"`);
+  } catch (err) {
+    console.error("Demo complete error:", err);
+    res.status(500).json({ error: err instanceof Error ? err.message : "Unknown error" });
+  } finally {
+    demoInFlight--;
+  }
+});
+
 // ---- Dynamic pricing --------------------------------------------------------
 // Public quote endpoint: what would this call cost? Lets the agent (or the demo
 // UI) show the price before paying. No payment required.

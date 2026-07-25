@@ -88,6 +88,17 @@
   .meter{height:10px;background:#08080a;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:10px 0 6px}
   .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#2aa);transition:width .5s var(--ease)}
   .hint{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.55}
+  /* branded audio player (replaces the default native control box) */
+  .player{display:flex;align-items:center;gap:12px;margin-top:14px;padding:11px 13px;
+    background:#08080a;border:1px solid var(--line);border-radius:12px}
+  .pbtn{flex:none;width:38px;height:38px;border-radius:50%;border:none;background:var(--logo);color:#fff;
+    display:grid;place-items:center;cursor:pointer;transition:filter .2s,transform .15s var(--ease)}
+  .pbtn:hover{filter:brightness(1.08)} .pbtn:active{transform:scale(.94)}
+  .pbtn svg{width:15px;height:15px}
+  .pbar{flex:1;height:6px;border-radius:999px;background:#1c1c22;position:relative;cursor:pointer}
+  .pbar>i{position:absolute;inset:0 auto 0 0;width:0;border-radius:999px;background:linear-gradient(90deg,var(--good),var(--logo));transition:width .1s linear}
+  .ptime{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:82px;text-align:right}
+  .player .pdl{padding:7px 12px;font-size:12.5px;flex:none}
   .pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);
     border:1px solid color-mix(in srgb,var(--brass) 40%,var(--line));border-radius:999px;padding:3px 10px}
   /* dark sections carry the same graph grid, in white, full-bleed across the body */
@@ -207,9 +218,14 @@
         <button class="btn primary" id="saybtn" onclick="demoSpeak()">Speak it (pays on-chain)</button>
         <span class="hint" id="sayout"></span>
       </div>
-      <div id="playerwrap" style="display:none;margin-top:14px">
-        <audio id="player" controls style="width:100%"></audio>
-        <div style="margin-top:10px"><a class="btn ghost" id="dl" download="tab402.mp3">Download MP3</a></div>
+      <div id="playerwrap" class="player" style="display:none">
+        <button class="pbtn" id="pbtn" type="button" aria-label="Play">
+          <svg id="picon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="pbar" id="pbar"><i id="pfill"></i></div>
+        <span class="ptime" id="ptime">0:00</span>
+        <a class="btn ghost pdl" id="dl" download="tab402.mp3">MP3</a>
+        <audio id="player" preload="metadata"></audio>
       </div>
     </div>
 
@@ -350,7 +366,7 @@ const audio = Buffer.from(await res.arrayBuffer()); // your MP3, paid on-chain`;
         const url = URL.createObjectURL(blob);
         document.getElementById('player').src = url;
         document.getElementById('dl').href = url;
-        document.getElementById('playerwrap').style.display = 'block';
+        document.getElementById('playerwrap').style.display = 'flex';
         out.textContent = 'Done - payment settled, audio ready.';
         loadFeed(); loadStats();
         // settle is recorded a moment after the tx confirms; refresh again
@@ -383,6 +399,29 @@ const audio = Buffer.from(await res.arrayBuffer()); // your MP3, paid on-chain`;
       }
     }catch{}
   }
+
+  // branded audio player: play/pause, progress, scrub, time
+  (function(){
+    const a=document.getElementById('player'), btn=document.getElementById('pbtn'),
+      icon=document.getElementById('picon'), bar=document.getElementById('pbar'),
+      fill=document.getElementById('pfill'), t=document.getElementById('ptime');
+    if(!a) return;
+    const PLAY='<path d="M8 5v14l11-7z"/>', PAUSE='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    const fmt=s=>{ s=Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+    btn.addEventListener('click',()=>{ a.paused ? a.play() : a.pause(); });
+    a.addEventListener('play',()=>{ icon.innerHTML=PAUSE; btn.setAttribute('aria-label','Pause'); });
+    a.addEventListener('pause',()=>{ icon.innerHTML=PLAY; btn.setAttribute('aria-label','Play'); });
+    a.addEventListener('ended',()=>{ icon.innerHTML=PLAY; });
+    a.addEventListener('timeupdate',()=>{
+      const d=a.duration||0; fill.style.width=(d?a.currentTime/d*100:0)+'%';
+      t.textContent=fmt(a.currentTime)+' / '+fmt(d);
+    });
+    a.addEventListener('loadedmetadata',()=>{ fill.style.width='0%'; t.textContent='0:00 / '+fmt(a.duration); });
+    bar.addEventListener('click',e=>{
+      const r=bar.getBoundingClientRect(), frac=Math.min(Math.max((e.clientX-r.left)/r.width,0),1);
+      if(a.duration) a.currentTime=frac*a.duration;
+    });
+  })();
 
   loadStats(); setInterval(loadStats, 6000);
   loadFeed(); setInterval(loadFeed, 4000);
