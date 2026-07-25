@@ -14,7 +14,7 @@ import { x402Client, wrapFetchWithPayment, type PaymentRequirements } from "@x40
 import { createClientCasperSigner } from "@make-software/casper-x402";
 import { ExactCasperScheme as ExactCasperClientScheme } from "@make-software/casper-x402/exact/client";
 import casperSdk from "casper-js-sdk";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { AsyncLocalStorage } from "node:async_hooks";
 import dashboardApi from "../dashboard/api.js";
@@ -159,15 +159,39 @@ app.use(express.static(WEB_DIR));
 const DEMO_KEY_PATH = process.env.DEMO_AGENT_KEY_PATH || "./facilitator.pem";
 const DEMO_MAX_CHARS = parseInt(process.env.DEMO_MAX_CHARS || "300", 10);
 
+// The demo is house-paid from the same account as the facilitator (see the note
+// in lib/casper.ts). On cloud hosts (Fly, Railway) that key is provided as an
+// inline secret — SECRET_KEY_PEM_<NET> — not shipped as a file, so the
+// PEM-path signer below can't find it. Materialize it once from the same secret
+// the facilitator already uses. Locally the file already exists, so this no-ops.
+function demoNetSuffix(): string {
+  const first = (process.env.CASPER_NETWORKS || "casper:casper-test").split(",")[0].trim();
+  return first.toUpperCase().replace(/[:\-]/g, "_");
+}
+function ensureDemoKeyFile(): void {
+  if (existsSync(DEMO_KEY_PATH)) return;
+  const suffix = demoNetSuffix();
+  const inline = process.env.DEMO_AGENT_KEY_PEM || process.env[`SECRET_KEY_PEM_${suffix}`];
+  if (!inline) return; // nothing to write; getDemoFetch will surface the missing-key error
+  const pem = inline.replace(/\\n/g, "\n").replace(/\r/g, "");
+  writeFileSync(DEMO_KEY_PATH, pem, { mode: 0o600 });
+}
+
 // Build a fresh payment client per request - reusing one across calls can
 // carry stale scheme state into the next payment authorization.
 async function getDemoFetch(): Promise<typeof fetch> {
   const selector = (_v: number, options: PaymentRequirements[]): PaymentRequirements =>
     options.find(o => o.network.startsWith("casper:")) || options[0];
+  ensureDemoKeyFile();
+  // Default the algo to the facilitator's for this network so the house key
+  // parses correctly without an extra env var; DEMO_AGENT_KEY_ALGO overrides.
+  const algoRaw = (
+    process.env.DEMO_AGENT_KEY_ALGO ||
+    process.env[`SECRET_KEY_ALGO_${demoNetSuffix()}`] ||
+    "ed25519"
+  ).toLowerCase();
   const algo =
-    (process.env.DEMO_AGENT_KEY_ALGO || "ed25519") === "secp256k1"
-      ? casperSdk.KeyAlgorithm.SECP256K1
-      : casperSdk.KeyAlgorithm.ED25519;
+    algoRaw === "secp256k1" ? casperSdk.KeyAlgorithm.SECP256K1 : casperSdk.KeyAlgorithm.ED25519;
   const signer = await createClientCasperSigner(DEMO_KEY_PATH, algo);
   const client = new x402Client(selector).register("casper:*", new ExactCasperClientScheme(signer));
   return wrapFetchWithPayment(fetch, client) as typeof fetch;
