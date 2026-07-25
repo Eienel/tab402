@@ -38,7 +38,9 @@ function envInt(key: string, def: number): number {
   return Number.isFinite(n) && n > 0 ? n : def;
 }
 
-const toX402 = (motes: bigint): string => (Number(motes) / SCALE).toFixed(3);
+// 6 decimals so sub-milli amounts (a cheap Flash-Lite call meters well under
+// 0.001) show real digits instead of rounding to 0.000.
+const toX402 = (motes: bigint): string => (Number(motes) / SCALE).toFixed(6);
 
 // ---- Deepgram TTS: priced per input character -------------------------------
 export interface TtsEstimate {
