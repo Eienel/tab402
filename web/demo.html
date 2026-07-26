@@ -423,6 +423,9 @@
   const promptEl = $('prompt'), routeout = $('routeout');
   let qTimer;
   const SEED_MSG = '<span class="seed">Type a prompt - the rail shows which model it picks and the price.</span>';
+  // Our CEP-18 token's symbol. The quote echoes the rail's ASSET_SYMBOL, which
+  // falls back to a placeholder when that env var isn't set, so label it here.
+  const ASSET = 'X402';
   function tierClass(model){ return model.includes('lite') ? 'tier-lite' : model.includes('pro') ? 'tier-pro' : 'tier-flash'; }
   function renderRoute(q){
     const m = q.meta || {};
@@ -431,10 +434,10 @@
     return '<div class="meterhead" style="margin-bottom:14px"><span>routed to</span>'
       + '<span class="modeltag ' + tierClass(m.model || '') + '"><span class="dot"></span>' + (m.modelLabel || '?') + '</span></div>'
       + '<div class="qrow"><span>why</span><span style="color:var(--text)">' + (m.reason || '') + '</span></div>'
-      + '<div class="qrow"><span>price for this call (ceiling)</span><b class="mono accent">' + q.x402 + ' ' + q.asset + '</b></div>'
-      + '<div class="qrow"><span>if it always used Pro</span><b class="mono" style="text-decoration:line-through;color:var(--faint)">' + m.premiumX402 + ' ' + q.asset + '</b></div>'
+      + '<div class="qrow"><span>price for this call (ceiling)</span><b class="mono accent">' + q.x402 + ' ' + ASSET + '</b></div>'
+      + '<div class="qrow"><span>if it always used Pro</span><b class="mono" style="text-decoration:line-through;color:var(--faint)">' + m.premiumX402 + ' ' + ASSET + '</b></div>'
       + '<div style="padding-top:12px"><div class="qrow" style="border:none;padding-bottom:4px"><span>you save</span>'
-      + '<b class="mono" style="color:var(--good)">' + m.savingsX402 + ' ' + q.asset + ' · ' + pct + '%</b></div>'
+      + '<b class="mono" style="color:var(--good)">' + m.savingsX402 + ' ' + ASSET + ' · ' + pct + '%</b></div>'
       + '<div class="savebar"><i style="width:' + pct + '%"></i></div></div>'
       + '<p class="seed" style="margin-top:14px">Bounded ceiling (Workaround A): the agent is credited the difference between this and the metered actual after the call.</p>';
   }
