@@ -1,0 +1,43 @@
+# Manual deploy to Fly.io, for when you do not have flyctl locally.
+#
+# One-time setup:
+#   1. Fly dashboard -> Account -> Access Tokens -> create a deploy token.
+#   2. This repo -> Settings -> Secrets and variables -> Actions -> New secret
+#      named FLY_API_TOKEN with that value.
+#
+# Then run it from the Actions tab: "Deploy to Fly" -> Run workflow.
+name: Deploy to Fly
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_volume:
+        description: "Create the ledger volume if it does not exist yet"
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency: deploy-fly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # Idempotent: only creates the volume when the app has none. Enable the
+      # [[mounts]] block in fly.toml after this succeeds to actually use it.
+      - name: Create ledger volume
+        if: ${{ inputs.create_volume }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if flyctl volumes list --app tab402 | grep -q tab402_data; then
+            echo "Volume tab402_data already exists, skipping."
+          else
+            flyctl volumes create tab402_data --app tab402 --size 1 --region iad --yes
+          fi
+
+      - name: Deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only

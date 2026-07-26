@@ -9,15 +9,21 @@ primary_region = "iad"
   min_machines_running = 0
   processes = ["app"]
 
-[env]
-  # Settlement ledger lives on the volume below, not the ephemeral rootfs.
-  DATA_DIR = "/data"
-
-# Persists the settlement history across deploys and idle auto-stops.
-# Create once before deploying:  fly volumes create tab402_data --size 1 --region iad
-[[mounts]]
-  source = "tab402_data"
-  destination = "/data"
+# Optional: persist the settlement history across deploys and idle auto-stops.
+# The rootfs is ephemeral, so without this the dashboard feed empties on restart
+# (the payments themselves are unaffected; they live on Casper).
+#
+# Deploying with a mount whose volume does not exist FAILS, so create it first:
+#   fly volumes create tab402_data --size 1 --region iad
+# The "Deploy to Fly" GitHub Action in this repo does that for you.
+# Then uncomment all four lines below and redeploy.
+#
+# [env]
+#   DATA_DIR = "/data"
+#
+# [[mounts]]
+#   source = "tab402_data"
+#   destination = "/data"
 
 [[vm]]
   memory = "1gb"
