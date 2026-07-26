@@ -158,14 +158,15 @@ The app is a single container (facilitator plus proxy) deployed on Fly.io. See `
 
 Secrets are never baked into the image. Set them on the platform (`fly secrets set …`), including the facilitator PEM, `DEMO_AGENT_KEY_PEM`, `DEEPGRAM_API_KEY`, and `GEMINI_API_KEY`.
 
-The settlement ledger is stored on a Fly volume, because the machine's root filesystem is ephemeral: it resets on deploy and whenever the machine idle-stops. Create the volume once before the first deploy:
+No local `flyctl`? The "Deploy to Fly" GitHub Action deploys from the Actions tab. It needs one repo secret, `FLY_API_TOKEN`, from the Fly dashboard under Account, Access Tokens.
+
+The machine's root filesystem is ephemeral: it resets on deploy and whenever the machine idle-stops, which empties the dashboard's settlement feed. To keep that history, create a volume and mount it:
 
 ```bash
 fly volumes create tab402_data --size 1 --region iad
-fly deploy
 ```
 
-Without it the dashboard's settlement feed empties on every restart. The payments themselves are unaffected, since they live on Casper.
+or run the deploy workflow with "Create the ledger volume" checked. Then uncomment the `[env]` and `[[mounts]]` blocks in `fly.toml` and redeploy. Deploying with a mount whose volume does not exist will fail, so create it first. The payments themselves are never affected, since they live on Casper.
 
 ## Why this is bigger than the demo
 
