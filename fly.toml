@@ -1,5 +1,7 @@
 app = "tab402"
-primary_region = "iad"
+# Must match where the machine actually runs: a mounted volume has to live in
+# the same region as the machine that mounts it.
+primary_region = "jnb"
 
 [http_service]
   internal_port = 4021
