@@ -20,17 +20,24 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
       # fly.toml mounts this volume, and deploying against a mount whose volume
-      # does not exist fails, so ensure it first. Idempotent: creates it only
-      # when the app has none, so re-running this workflow is always safe.
+      # does not exist fails, so ensure it first. The volume must live in the
+      # SAME region as the machine, which is not necessarily primary_region, so
+      # detect it from the running machine rather than assuming. Idempotent:
+      # creates the volume only when that region has none.
       - name: Ensure ledger volume exists
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          if flyctl volumes list --app tab402 | grep -q tab402_data; then
-            echo "Volume tab402_data already exists, skipping."
+          set -euo pipefail
+          REGION=$(flyctl machines list --app tab402 --json | jq -r '.[0].region // empty')
+          REGION=${REGION:-$(grep -oP 'primary_region\s*=\s*"\K[^"]+' fly.toml)}
+          echo "Machine region: $REGION"
+          if flyctl volumes list --app tab402 --json \
+               | jq -e --arg r "$REGION" '.[] | select(.name == "tab402_data" and .region == $r)' >/dev/null; then
+            echo "Volume tab402_data already exists in $REGION, skipping."
           else
-            echo "Creating volume tab402_data..."
-            flyctl volumes create tab402_data --app tab402 --size 1 --region iad --yes
+            echo "Creating volume tab402_data in $REGION..."
+            flyctl volumes create tab402_data --app tab402 --size 1 --region "$REGION" --yes
           fi
 
       - name: Deploy
