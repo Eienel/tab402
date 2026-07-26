@@ -160,13 +160,13 @@ Secrets are never baked into the image. Set them on the platform (`fly secrets s
 
 No local `flyctl`? The "Deploy to Fly" GitHub Action deploys from the Actions tab. It needs one repo secret, `FLY_API_TOKEN`, from the Fly dashboard under Account, Access Tokens.
 
-The machine's root filesystem is ephemeral: it resets on deploy and whenever the machine idle-stops, which empties the dashboard's settlement feed. To keep that history, create a volume and mount it:
+The machine's root filesystem is ephemeral: it resets on deploy and whenever the machine idle-stops. The settlement ledger therefore lives on a Fly volume (`DATA_DIR` and `[[mounts]]` in `fly.toml`) so the dashboard's history survives restarts. The deploy workflow creates that volume automatically if it is missing. Deploying some other way requires creating it once first, because a deploy against a mount whose volume does not exist will fail:
 
 ```bash
 fly volumes create tab402_data --size 1 --region iad
 ```
 
-or run the deploy workflow with "Create the ledger volume" checked. Then uncomment the `[env]` and `[[mounts]]` blocks in `fly.toml` and redeploy. Deploying with a mount whose volume does not exist will fail, so create it first. The payments themselves are never affected, since they live on Casper.
+The payments themselves are never affected either way, since they live on Casper.
 
 ## Why this is bigger than the demo
 
