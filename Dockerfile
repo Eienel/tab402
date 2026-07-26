@@ -31,9 +31,9 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/web ./web
 
-# Secrets are NOT baked into the image — set them as platform secrets
+# Secrets are NOT baked into the image - set them as platform secrets
 # (Fly: `fly secrets set …`, Railway: service Variables). See README.
-# Token contract wasm — needed only by `npm run deploy-token`
+# Token contract wasm - needed only by `npm run deploy-token`
 COPY --from=builder /app/assets ./assets
 
 # Create data directory for ledger
@@ -45,6 +45,6 @@ EXPOSE 4021 4022 3000
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start the facilitator, wait until it answers, then start the proxy —
+# Start the facilitator, wait until it answers, then start the proxy:
 # the proxy's x402 init dies if the facilitator isn't up yet
 CMD ["sh", "-c", "npm run facilitator 2>&1 & i=0; until wget -qO- http://127.0.0.1:4022/supported >/dev/null 2>&1; do i=$((i+1)); [ $i -ge 60 ] && echo 'facilitator never came up' && exit 1; sleep 1; done; npm run proxy"]

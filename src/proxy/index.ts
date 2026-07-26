@@ -55,7 +55,7 @@ function parseEnv(): Env {
     port: parseInt(process.env.PROXY_PORT || "4021", 10),
     payeeAddress: required("PAYEE_ADDRESS"),
     // The facilitator runs in the same container (see Dockerfile CMD), so default
-    // to localhost instead of hard-requiring the var — avoids a crash-loop when
+    // to localhost instead of hard-requiring the var - avoids a crash-loop when
     // it isn't set as a platform secret.
     facilitatorURL: process.env.FACILITATOR_URL || "http://127.0.0.1:4022",
     facilitatorAPIKey: process.env.FACILITATOR_API_KEY || "",
@@ -161,7 +161,7 @@ const DEMO_MAX_CHARS = parseInt(process.env.DEMO_MAX_CHARS || "300", 10);
 
 // The demo is house-paid from the same account as the facilitator (see the note
 // in lib/casper.ts). On cloud hosts (Fly, Railway) that key is provided as an
-// inline secret — SECRET_KEY_PEM_<NET> — not shipped as a file, so the
+// inline secret - SECRET_KEY_PEM_<NET> - not shipped as a file, so the
 // PEM-path signer below can't find it. Materialize it once from the same secret
 // the facilitator already uses. Locally the file already exists, so this no-ops.
 function demoNetSuffix(): string {

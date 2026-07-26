@@ -25,7 +25,7 @@ export interface RouteQuote {
   motes: string;
   /** Same amount in whole tokens, e.g. "0.056". */
   x402: string;
-  /** Human-readable breakdown (ASCII — also emitted as an HTTP header). */
+  /** Human-readable breakdown (ASCII - also emitted as an HTTP header). */
   basis: string;
   /** Route-specific display fields (chars, model, savings, …). */
   meta: Record<string, string | number>;

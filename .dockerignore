@@ -1,4 +1,4 @@
-# Never bake secrets or local cruft into the image — provide config via
+# Never bake secrets or local cruft into the image - provide config via
 # platform secrets (Fly/Railway env) instead.
 .env
 .env.*
