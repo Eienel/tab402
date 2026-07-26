@@ -20,7 +20,7 @@ const rpcUrl = process.env.RPCURL_CASPER_CASPER_TEST || "https://node.testnet.ca
 const chainName = (process.env.CAIP2_CHAIN_ID || "casper:casper-test").split(":")[1];
 // This self-hosted setup uses one account for facilitator + treasury, so the
 // deployer key falls back to the facilitator's inline PEM when no explicit
-// deployer PEM is set — that way importing the existing .env fully configures
+// deployer PEM is set - that way importing the existing .env fully configures
 // funding with no extra secret and no key file in the image.
 const deployerPemInline =
   process.env.DEPLOYER_PRIVATE_KEY_PEM || process.env.SECRET_KEY_PEM_CASPER_CASPER_TEST;
@@ -36,7 +36,7 @@ function deployerKey() {
   const algo = deployerAlgo === "secp256k1" ? KeyAlgorithm.SECP256K1 : KeyAlgorithm.ED25519;
   // Prefer an inline PEM from a platform secret (Fly/Railway) so no key file ships
   // in the image; fall back to a local file for development. Env-stored PEMs often
-  // carry literal "\n" instead of newlines — normalize them.
+  // carry literal "\n" instead of newlines - normalize them.
   const pem = deployerPemInline
     ? deployerPemInline.replace(/\\n/g, "\n")
     : readFileSync(deployerPemPath, "utf8");

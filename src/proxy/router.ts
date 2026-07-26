@@ -3,7 +3,7 @@
 // The agent sends one prompt to /v1/complete; the rail picks the cheapest model
 // that should still do the job, prices the call to that model, and reports what
 // it saved versus the premium model. This is the "cost-aware rail" idea: the
-// agent doesn't pick a model or a price — it just asks, and pays the metered cost.
+// agent doesn't pick a model or a price - it just asks, and pays the metered cost.
 //
 // Routing is heuristic-first (fast, free, deterministic). An optional LLM judge
 // can be layered on later behind a flag; the heuristic is the demo default.
@@ -56,7 +56,7 @@ export function models(): Record<GeminiModel, ModelSpec> {
   };
 }
 
-/** The model we compare savings against — the one a naive integration would use. */
+/** The model we compare savings against - the one a naive integration would use. */
 export const PREMIUM: GeminiModel = "gemini-pro";
 
 export interface RouteDecision {

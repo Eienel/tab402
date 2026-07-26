@@ -209,7 +209,7 @@
   <div class="stage">
     <div class="panel controls">
       <h3>Set the budget</h3>
-      <p class="note">Each line is <b>priced per character</b> by the rail and settles on Casper — roughly
+      <p class="note">Each line is <b>priced per character</b> by the rail and settles on Casper - roughly
         <span class="mono accent">0.05–0.06 X402</span> a line. Choose the agent's starting balance.</p>
       <div class="field">
         <span class="lbl">Starting budget</span>
@@ -257,7 +257,7 @@
     <p class="kicker">Cost-aware routing</p>
     <h1 style="font-size:clamp(24px,4vw,36px);margin-bottom:14px">One endpoint. The rail <em>picks the model.</em></h1>
     <p class="sub" style="margin-bottom:8px">Send a prompt and the rail routes it to the cheapest model that should still do the
-      job and prices the x402 charge to <em>that</em> model. Then run it — the demo agent pays the rail on-chain and gets the model's answer back, with the difference between the reserved ceiling and the metered actual credited to its Tab.</p>
+      job and prices the x402 charge to <em>that</em> model. Then run it - the demo agent pays the rail on-chain and gets the model's answer back, with the difference between the reserved ceiling and the metered actual credited to its Tab.</p>
     <div class="stage" style="margin-top:26px">
       <div class="panel controls">
         <div class="field">
@@ -277,7 +277,7 @@
         </div>
       </div>
       <div class="panel" id="routeout">
-        <span class="seed">Type a prompt — the rail shows which model it picks and the price.</span>
+        <span class="seed">Type a prompt - the rail shows which model it picks and the price.</span>
       </div>
     </div>
   </div>
@@ -422,7 +422,7 @@
   // ---- cost-aware router widget (live quotes from the rail) ----
   const promptEl = $('prompt'), routeout = $('routeout');
   let qTimer;
-  const SEED_MSG = '<span class="seed">Type a prompt — the rail shows which model it picks and the price.</span>';
+  const SEED_MSG = '<span class="seed">Type a prompt - the rail shows which model it picks and the price.</span>';
   function tierClass(model){ return model.includes('lite') ? 'tier-lite' : model.includes('pro') ? 'tier-pro' : 'tier-flash'; }
   function renderRoute(q){
     const m = q.meta || {};
@@ -445,7 +445,7 @@
     try{
       const q = await (await fetch('/v1/quote?prompt=' + encodeURIComponent(text))).json();
       routeout.innerHTML = renderRoute(q);
-    }catch(e){ routeout.innerHTML = '<span class="seed">Rail unavailable — try again.</span>'; }
+    }catch(e){ routeout.innerHTML = '<span class="seed">Rail unavailable - try again.</span>'; }
   }
   promptEl.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(quoteRoute, 450); });
   document.querySelectorAll('#examples .chip').forEach(c =>
@@ -458,7 +458,7 @@
     const m = j._tab || {};
     const settled = tx
       ? '<a href="https://testnet.cspr.live/transaction/' + tx + '" target="_blank" rel="noopener" style="color:var(--good)">settled ✓ tx ' + tx.slice(0,10) + '…</a>'
-      : (m.mode === 'stub' ? '<span style="color:var(--warn)">stub mode — set GEMINI_API_KEY on the rail for live output</span>' : 'settled ✓');
+      : (m.mode === 'stub' ? '<span style="color:var(--warn)">stub mode - set GEMINI_API_KEY on the rail for live output</span>' : 'settled ✓');
     return '<div class="meterhead" style="margin-bottom:12px"><span>routed to</span>'
       + '<span class="modeltag ' + tierClass(m.model || '') + '"><span class="dot"></span>' + (m.modelLabel || '?') + '</span></div>'
       + '<div class="qrow"><span>why</span><span style="color:var(--text)">' + (m.reason || '') + '</span></div>'
@@ -482,7 +482,7 @@
       const j = await r.json();
       if(!r.ok){ routeout.innerHTML = '<span class="seed">' + ((j && (j.hint || j.error)) || 'Call failed') + '</span>'; return; }
       routeout.innerHTML = renderAnswer(j, tx);
-    }catch(e){ routeout.innerHTML = '<span class="seed">Rail unavailable — try again.</span>'; }
+    }catch(e){ routeout.innerHTML = '<span class="seed">Rail unavailable - try again.</span>'; }
     finally{ btn.disabled = false; }
   };
 </script>

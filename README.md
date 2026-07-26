@@ -31,11 +31,23 @@ Every call is a final on-chain settlement. The payment either lands on Casper or
 
 ## What is live today (Casper testnet)
 
-- A working x402 paywall in front of a real third-party API (Deepgram text-to-speech).
+- A working x402 paywall in front of two real third-party APIs: Deepgram text-to-speech and cost-routed Gemini completions.
 - Our own CEP-18 x402 token deployed on Casper testnet.
 - A self-hosted facilitator that verifies signatures and settles transfers on-chain.
+- Usage-based pricing: speech is metered per character, LLM calls per token, so the 402 quote tracks the real cost driver instead of a flat toll.
+- Cost-aware routing: the rail judges each prompt and sends it to the cheapest Gemini tier that still clears the bar, prices the charge to that model, and reports what it saved versus always calling Pro.
 - A dashboard with a house-funded "Try it" demo, a global settlement feed, and per-key usage tracking. Each settlement links to the Casper block explorer.
 - A drop-in client snippet so any developer can point an agent at the gateway and have it pay automatically.
+
+### Paid endpoints
+
+| Endpoint | Priced by | Returns |
+|---|---|---|
+| `POST /v1/speak` | input characters | MP3 audio from Deepgram |
+| `POST /v1/complete` | tokens, at the routed model's rate | The model's answer plus a cost receipt |
+| `GET /v1/quote` | free | What a call would cost, before paying |
+
+`/v1/complete` reserves a ceiling at request time (the paywall settles that amount), then meters the actual usage and reports the difference so the overage can be credited back to the agent's Tab.
 
 ### Verify on-chain
 
@@ -68,6 +80,7 @@ Live settlement transactions are also visible in the dashboard's "Live transacti
 3. Type a sentence and submit. Watch the staged status: signing the x402 authorization, settling on Casper, then synthesizing.
 4. When it finishes, play the returned audio and click the green transaction link to see the settlement on `testnet.cspr.live`.
 5. Scroll to the "Live transaction feed" to see the payment you just made recorded on-chain.
+6. On the demo page, scroll to "Cost-aware routing", enter a prompt and press "Run it". The rail shows which model it picked and why, pays for that call on-chain, returns the model's answer, and reports the reserved ceiling against the metered actual.
 
 ## Run locally
 
@@ -130,17 +143,33 @@ Key environment variables (see `.env.example` for the full list):
 | `RPCURL_CASPER_CASPER_TEST` | Casper testnet JSON-RPC endpoint |
 | `ASSET_PACKAGE` | CEP-18 x402 token package hash (written by `deploy-token`) |
 | `PRICE_MOTES` | Price per call, in token motes (9 decimals) |
-| `PAYEE_ADDRESS` | Account that receives payments |
-| `DEEPGRAM_API_KEY` | Key for the upstream API behind the paywall |
+| `PAYEE_ADDRESS` | Account that receives payments. Keep it different from the demo payer, or settlements read as a self-transfer on the explorer |
+| `ASSET_NAME` / `ASSET_SYMBOL` | Must match the deployed token. The name is part of the EIP-712 domain the contract validates, so a mismatch makes settlement revert |
+| `DEEPGRAM_API_KEY` | Key for the speech API behind the paywall |
+| `GEMINI_API_KEY` | Enables live LLM completions. Without it `/v1/complete` answers in stub mode |
+| `GEMINI_MODEL_LITE` / `_FLASH` / `_PRO` | Model ids per tier. Override when Google retires one |
+| `DEMO_AGENT_KEY_PEM` | Inline PEM for the account that pays the house-funded demo calls |
+| `DATA_DIR` | Where the settlement ledger is written. Points at a mounted volume in production |
 | `DEPLOYER_PRIVATE_KEY_PATH` | Treasury/facilitator key that holds the token supply and pays gas |
 
 ## Deploy
 
 The app is a single container (facilitator plus proxy) deployed on Fly.io. See `Dockerfile` and `fly.toml`. The container starts the facilitator, waits for it to be ready, then starts the proxy, which serves the API, the dashboard, and the static pages.
 
+Secrets are never baked into the image. Set them on the platform (`fly secrets set …`), including the facilitator PEM, `DEMO_AGENT_KEY_PEM`, `DEEPGRAM_API_KEY`, and `GEMINI_API_KEY`.
+
+The settlement ledger is stored on a Fly volume, because the machine's root filesystem is ephemeral: it resets on deploy and whenever the machine idle-stops. Create the volume once before the first deploy:
+
+```bash
+fly volumes create tab402_data --size 1 --region iad
+fly deploy
+```
+
+Without it the dashboard's settlement feed empties on every restart. The payments themselves are unaffected, since they live on Casper.
+
 ## Why this is bigger than the demo
 
-The reference integration gates Deepgram text-to-speech, but Deepgram is only the first API on the rail. The gateway is provider-agnostic: the same paywall, facilitator, and settlement flow work in front of any HTTP API. Text-to-speech was chosen because it produces an obvious, verifiable output (audio you can play) for a payment you can click through to on-chain. The value is the rail, not the specific API behind it.
+The reference integration gates Deepgram text-to-speech and Gemini completions, but those are just the first two APIs on the rail. The gateway is provider-agnostic: the same paywall, facilitator, and settlement flow work in front of any HTTP API. Speech was chosen because it produces an obvious, verifiable output (audio you can play) for a payment you can click through to on-chain, and the LLM route shows the rail doing something a flat toll cannot: picking the cheapest model that still does the job and pricing the call to it. The value is the rail, not the specific API behind it.
 
 ## Roadmap
 
@@ -153,7 +182,7 @@ See the full roadmap at https://eienel.github.io/tab402.
 
 ## Tech stack
 
-TypeScript, Express, the x402 protocol (`@x402/core`, `@x402/express`, `@x402/fetch`, `@make-software/casper-x402`), `casper-js-sdk`, a CEP-18 token on Casper testnet, Deepgram as the first paid upstream, deployed on Fly.io with the roadmap on GitHub Pages.
+TypeScript, Express, the x402 protocol (`@x402/core`, `@x402/express`, `@x402/fetch`, `@make-software/casper-x402`), `casper-js-sdk`, an Odra-built CEP-18 token on Casper testnet, Deepgram and Gemini as the paid upstreams, deployed on Fly.io with the roadmap on GitHub Pages.
 
 ## License
 
