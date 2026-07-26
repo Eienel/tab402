@@ -30,6 +30,8 @@ COPY --from=builder /app/src ./src
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/web ./web
+# The roadmap page, also served at /roadmap (see src/proxy/index.ts)
+COPY --from=builder /app/docs ./docs
 
 # Secrets are NOT baked into the image - set them as platform secrets
 # (Fly: `fly secrets set …`, Railway: service Variables). See README.

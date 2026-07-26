@@ -138,17 +138,23 @@ app.use("/api", dashboardApi);
 
 // ---- Frontend pages (served from web/, no payment required) ----
 const WEB_DIR = resolve(process.cwd(), "web");
-const page = (file: string) => (_req: express.Request, res: express.Response) => {
-  try {
-    res.type("html").send(readFileSync(resolve(WEB_DIR, file), "utf8"));
-  } catch (e) {
-    console.error(`Failed to serve ${file}:`, e);
-    res.status(500).send("Page unavailable");
-  }
-};
+// The roadmap is published on GitHub Pages from docs/. Serve the same file here
+// too, so it stays reachable when github.io is blocked on a viewer's network.
+const DOCS_DIR = resolve(process.cwd(), "docs");
+const page =
+  (file: string, dir: string = WEB_DIR) =>
+  (_req: express.Request, res: express.Response) => {
+    try {
+      res.type("html").send(readFileSync(resolve(dir, file), "utf8"));
+    } catch (e) {
+      console.error(`Failed to serve ${file}:`, e);
+      res.status(500).send("Page unavailable");
+    }
+  };
 app.get("/", page("index.html"));
 app.get("/dashboard", page("dashboard.html"));
 app.get("/demo", page("demo.html"));
+app.get("/roadmap", page("index.html", DOCS_DIR));
 // Static assets (logo/favicon) from web/, public. After the page routes so it
 // only serves extra files; before the paywall so it's not payment-gated.
 app.use(express.static(WEB_DIR));
