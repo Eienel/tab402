@@ -17,206 +17,307 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Rye&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0b0b0d;--panel:#141417;--panel2:#1a1a20;--line:#27272e;--text:#ededf0;
-    --muted:#9595a0;--faint:#62626c;--accent:#e8412f;--good:#36cf9b;--warn:#e8b339;
-    --brass:#c9962b;--blue:#4a9eea;
-    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;--sans:"Outfit",system-ui,sans-serif;
-    --display:"Rye",Georgia,serif;--ease:cubic-bezier(.16,1,.3,1);
+    --bg:#060608;--panel:#111114;--panel2:#17171b;--line:#232329;
+    --text:#ededf0;--muted:#9a9aa4;--faint:#5f5f68;
+    --accent:#e8412f;--accent-soft:rgba(232,65,47,.12);--accent-line:rgba(232,65,47,.32);
+    --logo:#e8412f;--smoke:#eef0f2;
+    --good:#36cf9b;--warn:#e8b339;--brass:#c9962b;--blue:#4a9eea;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+    --sans:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --apple:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --display:"Rye",Georgia,serif;
+    --ease:cubic-bezier(.16,1,.3,1);
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   html,body{overflow-x:hidden}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.55;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
   a{color:var(--accent);text-decoration:none}
-  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
   .mono{font-family:var(--mono)}
-  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(11,11,13,.72);border-bottom:1px solid var(--line)}
-  .navin{display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px}
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:20px;letter-spacing:.01em}
-  .mark{width:28px;height:28px;object-fit:contain;flex:none;filter:drop-shadow(0 0 7px rgba(232,65,47,.4))}
-  .navcta{display:flex;align-items:center;gap:18px}
-  .navlink{color:var(--muted);font-size:14px;font-weight:500}
-  .navlink:hover{color:var(--text)}
+  /* nav: spread wide across the top, shrinks to a floating pill on scroll */
+  nav{position:fixed;inset:0 0 auto 0;z-index:70;display:flex;justify-content:center;
+    padding:20px 24px;transition:padding .45s var(--ease);pointer-events:none}
+  .navbar{pointer-events:auto;width:100%;max-width:1080px;display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:8px 10px 8px 8px;border:1px solid transparent;border-radius:999px;
+    transition:max-width .55s var(--ease),background .45s var(--ease),border-color .45s var(--ease),box-shadow .45s var(--ease),padding .45s var(--ease)}
+  nav.shrunk{padding:12px 24px}
+  nav.shrunk .navbar{max-width:74%;background:rgba(9,9,12,.6);backdrop-filter:blur(18px) saturate(1.3);
+    border-color:rgba(255,255,255,.09);box-shadow:0 16px 46px -24px rgba(0,0,0,.9);padding:8px 10px 8px 16px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:20px;color:var(--smoke);letter-spacing:.01em}
+  .mark{width:28px;height:28px;object-fit:contain;flex:none;filter:drop-shadow(0 0 8px rgba(232,65,47,.5))}
+  .navcta{display:flex;align-items:center;gap:10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:999px;
+    font-weight:600;font-size:14px;font-family:var(--sans);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);
+    color:var(--smoke);cursor:pointer;transition:transform .15s var(--ease),border-color .25s,background .25s,filter .2s}
+  .btn:hover{border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.09)}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.primary{background:var(--logo);border-color:var(--logo);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  @media(max-width:600px){nav.shrunk .navbar{max-width:94%}.navcta .hide-sm{display:none}}
 
-  header.hero{padding:70px 0 40px}
-  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin:0 0 16px;display:inline-flex;align-items:center;gap:9px}
+  /* dark sections carry the graph grid in white, full-bleed */
+  .darksec{position:relative;overflow:hidden}
+  .darksec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.075) 1px,transparent 1px);
+    background-size:44px 44px}
+  .darksec>*{position:relative;z-index:1}
+
+  header.hero{padding:150px 0 96px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--logo);
+    margin:0 0 16px;display:inline-flex;align-items:center;gap:9px}
   .pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(54,207,155,.5);animation:pulse 2.4s var(--ease) infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(54,207,155,.45)}70%{box-shadow:0 0 0 9px rgba(54,207,155,0)}100%{box-shadow:0 0 0 0 rgba(54,207,155,0)}}
-  h1{font-size:clamp(32px,5.6vw,54px);line-height:1.04;letter-spacing:-.035em;font-weight:700;margin:0 0 18px}
-  h1 em{font-style:normal;color:var(--accent)}
-  .sub{font-size:clamp(16px,2.4vw,19px);color:var(--muted);max-width:62ch;line-height:1.6}
-  .heronote{margin-top:22px;font-family:var(--mono);font-size:13px;color:var(--faint)}
+  h1{font-family:var(--apple);font-size:clamp(34px,5.8vw,60px);line-height:1.0;letter-spacing:-.04em;
+    font-weight:800;margin:0 0 20px;color:var(--smoke)}
+  h1 em{font-style:normal;color:var(--logo)}
+  .sub{font-size:clamp(16px,2.2vw,19px);color:var(--muted);max-width:60ch;line-height:1.62}
+  .sub b{color:var(--text);font-weight:600}
+  .heronote{margin-top:24px;font-family:var(--mono);font-size:12.5px;color:var(--faint)}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
 
-  section{padding:36px 0}
-  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
-  h2{font-size:26px;letter-spacing:-.02em;margin:0 0 8px;font-weight:600}
-  .lede{color:var(--muted);margin:0 0 26px;max-width:64ch}
+  section.dark{padding:96px 0;position:relative}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--logo);margin:0 0 18px}
+  h2{font-family:var(--apple);font-size:clamp(26px,4vw,42px);letter-spacing:-.035em;margin:0 0 14px;
+    font-weight:800;color:var(--smoke);max-width:20ch;line-height:1.05}
+  h2 em{font-style:normal;color:var(--logo)}
+  .lede{color:var(--muted);margin:0 0 34px;max-width:62ch;font-size:16px;line-height:1.65}
 
-  /* the shift */
-  .shift{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin:8px 0}
-  .shiftcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
-  .shiftcard .t{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
-  .shiftcard h3{margin:0 0 8px;font-size:17px;font-weight:600}
-  .shiftcard p{margin:0;color:var(--muted);font-size:14px}
-  .arrow{color:var(--accent);font-size:26px;text-align:center}
+  /* ---- light interlude: the black / white / logo rhythm ---- */
+  .lightsec{position:relative;background:#f5f5f6;color:#131316;padding:96px 0;overflow:hidden;
+    border-top:1px solid rgba(20,20,25,.07)}
+  .lightsec::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(rgba(20,20,25,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(20,20,25,.08) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(120% 85% at 50% 0,#000,transparent 72%);
+    mask-image:radial-gradient(120% 85% at 50% 0,#000,transparent 72%)}
+  .lightsec .wrap{position:relative;z-index:1}
+  .lightsec .eyebrow{color:var(--logo)}
+  .lightsec h2{color:#0e0e11}
+  .lightsec .lede{color:#54545c}
+  .shift{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch;margin-top:8px}
+  .shiftcard{background:#fff;border:1px solid rgba(20,20,25,.1);border-radius:22px;padding:28px 30px;
+    box-shadow:0 24px 46px -30px rgba(20,20,25,.2);transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+  .shiftcard:hover{transform:translateY(-3px);box-shadow:0 34px 60px -32px rgba(20,20,25,.26)}
+  .shiftcard.dest{border-color:rgba(232,65,47,.35)}
+  .shiftcard .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a92;margin-bottom:12px}
+  .shiftcard.dest .t{color:var(--logo)}
+  .shiftcard h3{font-family:var(--apple);margin:0 0 9px;font-size:20px;font-weight:700;letter-spacing:-.02em;color:#141418}
+  .shiftcard p{margin:0;color:#54545c;font-size:14.5px;line-height:1.6}
+  .arrow{color:var(--logo);font-size:26px;display:grid;place-items:center;animation:nudge 2.6s var(--ease) infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
 
-  /* timeline */
-  .timeline{position:relative;margin-top:10px;padding-left:0}
-  .phase{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:24px 26px;margin-bottom:18px;box-shadow:0 20px 44px -30px rgba(0,0,0,.6)}
-  .phase::before{content:"";position:absolute;left:0;top:26px;bottom:26px;width:3px;border-radius:3px;background:var(--line)}
+  /* ---- timeline ---- */
+  .timeline{position:relative;margin-top:4px}
+  /* the spine draws itself as you scroll past the phases */
+  .spine{position:absolute;left:-22px;top:6px;width:3px;height:100%;border-radius:3px;pointer-events:none;
+    transform-origin:top center;transform:scaleY(var(--draw,0));
+    background:linear-gradient(var(--logo),rgba(232,65,47,.1));box-shadow:0 0 14px rgba(232,65,47,.5)}
+  .phase{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:20px;
+    padding:26px 28px;margin-bottom:18px;transition:border-color .3s var(--ease),transform .3s var(--ease)}
+  .phase:hover{border-color:var(--accent-line);transform:translateY(-2px)}
+  .phase::before{content:"";position:absolute;left:0;top:26px;bottom:26px;width:3px;border-radius:0 3px 3px 0;background:var(--line)}
   .phase.shipped::before{background:var(--good)}
   .phase.active::before{background:var(--accent)}
   .phase.next::before{background:var(--brass)}
   .phase.vision::before{background:var(--blue)}
   .phhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
-  .phnum{font-family:var(--display);font-size:22px;color:var(--faint)}
-  .phhead h3{margin:0;font-size:19px;font-weight:600;flex:1 1 auto;min-width:180px}
-  .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+  .phnum{font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:.06em}
+  .phhead h3{font-family:var(--apple);margin:0;font-size:20px;font-weight:700;letter-spacing:-.025em;flex:1 1 auto;min-width:180px;color:var(--smoke)}
+  .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 11px;
+    border-radius:999px;border:1px solid var(--line);white-space:nowrap}
   .badge.shipped{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,var(--line))}
   .badge.active{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
   .badge.next{color:var(--brass);border-color:color-mix(in srgb,var(--brass) 40%,var(--line))}
   .badge.vision{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,var(--line))}
-  .phgoal{color:var(--muted);font-size:14.5px;margin:2px 0 16px}
-  ul.items{list-style:none;margin:0;padding:0;display:grid;gap:9px}
-  ul.items li{position:relative;padding-left:26px;color:var(--text);font-size:14.5px;line-height:1.5}
-  ul.items li::before{content:"";position:absolute;left:4px;top:8px;width:8px;height:8px;border-radius:2px;background:var(--panel2);border:1px solid var(--faint)}
+  .phgoal{color:var(--muted);font-size:14.5px;margin:2px 0 18px;line-height:1.6}
+  ul.items{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  ul.items li{position:relative;padding-left:26px;color:var(--text);font-size:14.5px;line-height:1.55}
+  ul.items li::before{content:"";position:absolute;left:4px;top:7px;width:8px;height:8px;border-radius:2px;
+    background:var(--panel2);border:1px solid var(--faint)}
   .phase.shipped ul.items li::before{background:var(--good);border-color:var(--good)}
   ul.items li .tag{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:7px}
+  ul.items li .mono{color:var(--accent)}
 
-  /* proof */
-  .proof{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
-  .proof h3{margin:0 0 4px;font-size:16px;font-weight:600}
-  .proof p{margin:0 0 14px;color:var(--muted);font-size:14px}
+  /* ---- proof ---- */
+  .proof{background:#fff;border:1px solid rgba(20,20,25,.1);border-radius:20px;padding:26px 28px;
+    box-shadow:0 24px 46px -30px rgba(20,20,25,.2)}
+  .proof h3{font-family:var(--apple);margin:0 0 6px;font-size:18px;font-weight:700;letter-spacing:-.02em;color:#141418}
+  .proof p{margin:0 0 16px;color:#54545c;font-size:14.5px;line-height:1.6}
   .kv{font-family:var(--mono);font-size:12.5px;line-height:2.1;word-break:break-all}
-  .kv .lbl{color:var(--faint);display:inline-block;min-width:130px}
-  .kv a{color:var(--good)}
+  .kv .lbl{color:#8a8a92;display:inline-block;min-width:140px}
+  .kv a{color:#b5361f}
+  .lightsec .btn{border-color:rgba(20,20,25,.15);background:#fff;color:#141418}
+  .lightsec .btn:hover{border-color:rgba(20,20,25,.32);background:#fff}
+  .lightsec .btn.primary{background:var(--logo);border-color:var(--logo);color:#fff}
 
-  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:filter .2s,transform .15s var(--ease)}
-  .btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(1px)}
-  .btn.ghost{background:var(--panel2);border-color:var(--line);color:var(--text)}
-
-  footer{padding:44px 0 60px;margin-top:30px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
-  .foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
+  footer{padding:54px 0 62px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
   .foot a{color:var(--muted)}.foot a:hover{color:var(--text)}
 
-  @media(max-width:680px){
-    .shift{grid-template-columns:1fr;gap:12px}
-    .arrow{transform:rotate(90deg)}
+  /* spring-in reveal */
+  .reveal{opacity:0;transform:translateY(40px) scale(.988);
+    transition:opacity .85s cubic-bezier(.34,1.28,.5,1),transform .85s cubic-bezier(.34,1.28,.5,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .arrow,.pulse{animation:none}
+  }
+
+  @media(max-width:760px){
+    .shift{grid-template-columns:1fr;gap:14px}
+    .arrow{transform:rotate(90deg);animation:none}
     .kv .lbl{min-width:0;display:block}
+    .spine{display:none}
+  }
+  @media(max-width:600px){
+    .wrap{padding:0 18px}
+    header.hero{padding:120px 0 64px}
+    section.dark,.lightsec{padding:64px 0}
+    .phase{padding:22px 20px}
   }
 </style>
 </head>
 <body>
 <div class="grain"></div>
 
-<nav><div class="wrap navin">
-  <a class="brand" href="https://tab402.fly.dev/"><img class="mark" src="logo.png" alt="Tab logo" /> Tab</a>
-  <div class="navcta">
-    <a class="navlink" href="https://tab402.fly.dev/demo">Live demo</a>
-    <a class="navlink" href="https://tab402.fly.dev/dashboard">Dashboard</a>
-    <a class="navlink" href="https://github.com/Eienel/tab402">GitHub</a>
+<nav id="nav">
+  <div class="navbar">
+    <a class="brand" href="https://tab402.fly.dev/"><img class="mark" src="logo.png" alt="Tab logo" /> Tab</a>
+    <div class="navcta">
+      <a class="btn hide-sm" href="https://tab402.fly.dev/">Home</a>
+      <a class="btn" href="https://tab402.fly.dev/dashboard">Dashboard</a>
+      <a class="btn primary" href="https://tab402.fly.dev/demo">Live demo</a>
+    </div>
   </div>
-</div></nav>
+</nav>
 
-<div class="wrap">
-  <header class="hero">
-    <span class="kicker"><span class="pulse"></span> Roadmap · live on Casper testnet</span>
-    <h1>The payment rail for<br><em>agent-native</em> AI access.</h1>
-    <p class="sub">Tab lets any human or autonomous agent pay <b>per request</b>, on-chain, for premium AI -
-      no subscription, no card, no account. Fund a balance, spend it down to zero, and hit a wall it
-      can't cross. We proved the rail with a paid API. The destination is <b>direct, pay-as-you-go access to Claude</b>.</p>
-    <p class="heronote">HTTP 402 · x402 · Casper · CEP-18 settlement · one signed authorization per call</p>
-  </header>
+<section class="darksec">
+  <div class="wrap">
+    <header class="hero">
+      <span class="kicker"><span class="pulse"></span> Roadmap · live on Casper testnet</span>
+      <h1>The payment rail for<br><em>agent-native</em> AI access.</h1>
+      <p class="sub">Tab lets any human or autonomous agent pay <b>per request</b>, on-chain, for premium AI:
+        no subscription, no card, no account. Fund a balance, spend it down to zero, and hit a wall it
+        can't cross. We proved the rail with real paid APIs. The destination is <b>direct, pay-as-you-go access to Claude</b>.</p>
+      <p class="heronote">HTTP 402 · x402 · Casper · CEP-18 settlement · one signed authorization per call</p>
+      <div class="cta">
+        <a class="btn primary" href="https://tab402.fly.dev/demo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Run the live demo
+        </a>
+        <a class="btn" href="https://github.com/Eienel/tab402">Read the code</a>
+      </div>
+    </header>
+  </div>
+</section>
 
-  <section>
-    <p class="eyebrow">The shift</p>
-    <h2>From a primitive to a product</h2>
-    <p class="lede">The primitive is done and running: pay-per-call settlement on-chain, gating a real API.
-      Text-to-speech was the proof. The same rail, pointed at a frontier model, becomes something people
-      actually want - metered access to Claude.</p>
-    <div class="shift">
+<section class="lightsec">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">The shift</p>
+      <h2>From a primitive to a <em>product</em>.</h2>
+      <p class="lede">The primitive is done and running: pay-per-call settlement on-chain, gating real APIs.
+        Speech and cost-routed LLM calls were the proof. The same rail, pointed at a frontier model,
+        becomes something people actually want: metered access to Claude.</p>
+    </div>
+    <div class="shift reveal">
       <div class="shiftcard">
         <div class="t">What we built</div>
-        <h3>Pay-per-call → Deepgram TTS</h3>
-        <p>An agent signs an x402 authorization, the facilitator settles a CEP-18 transfer on Casper, and the rail returns spoken audio. Real money, real API, hard spend cap.</p>
+        <h3>Pay-per-call, two live APIs</h3>
+        <p>An agent signs an x402 authorization, the facilitator settles a CEP-18 transfer on Casper, and the rail returns the result. Speech priced per character, LLM calls per token and routed to the cheapest capable model. Real money, real APIs, a hard spend cap.</p>
       </div>
-      <div class="arrow">→</div>
-      <div class="shiftcard" style="border-color:color-mix(in srgb,var(--accent) 35%,var(--line))">
-        <div class="t" style="color:var(--accent)">Where it's going</div>
-        <h3>Pay-per-message → Claude</h3>
-        <p>The same rail in front of the Claude Messages API. Chat with Claude and pay per message from an on-chain balance - for people and for agents that pay their own way.</p>
+      <div class="arrow">&rarr;</div>
+      <div class="shiftcard dest">
+        <div class="t">Where it's going</div>
+        <h3>Pay-per-message, Claude</h3>
+        <p>The same rail in front of the Claude Messages API. Chat with Claude and pay per message from an on-chain balance, for people and for agents that pay their own way.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section>
-    <p class="eyebrow">Roadmap</p>
-    <h2>Four phases to agent-native Claude access</h2>
-    <p class="lede">Each phase ships something usable. We don't wait for the smart-contract escrow to put Claude behind the rail - we harden the guarantees as we scale.</p>
+<section class="darksec dark" id="phases">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">Roadmap</p>
+      <h2>Four phases to agent-native <em>Claude access</em>.</h2>
+      <p class="lede">Each phase ships something usable. We don't wait for the smart-contract escrow to put
+        Claude behind the rail, we harden the guarantees as we scale.</p>
+    </div>
 
     <div class="timeline">
+      <div class="spine" aria-hidden="true"></div>
 
-      <div class="phase shipped">
+      <div class="phase shipped reveal">
         <div class="phhead"><span class="phnum">01</span><h3>The primitive</h3><span class="badge shipped">Shipped</span></div>
         <p class="phgoal">Prove that an agent can pay for a real API, per call, on-chain, with a cap it cannot exceed.</p>
         <ul class="items">
-          <li>x402 paywall (HTTP 402 + price) in front of a live API</li>
-          <li>Own CEP-18 token on Casper testnet; facilitator verifies signatures & settles transfers, pays gas</li>
-          <li>Per-call settlement - one signed authorization, one on-chain transfer, real spoken audio back</li>
+          <li>x402 paywall (HTTP 402 + price) in front of live APIs</li>
+          <li>Own CEP-18 token on Casper testnet; facilitator verifies signatures and settles transfers, pays gas</li>
+          <li>Per-call settlement: one signed authorization, one on-chain transfer, a real result back</li>
+          <li>Usage-based pricing: speech per character, LLM calls per token <span class="tag">not a flat toll</span></li>
+          <li>Cost-aware routing: the rail picks the cheapest capable model and prices the call to it</li>
+          <li>Bounded ceilings with credit back: reserved versus metered actual, reported per call</li>
           <li>Live dashboard, house-funded demo, and a global on-chain settlement feed</li>
-          <li>Single-account treasury: holds supply, pays gas, signs settlements</li>
         </ul>
       </div>
 
-      <div class="phase active">
+      <div class="phase active reveal">
         <div class="phhead"><span class="phnum">02</span><h3>Claude, metered</h3><span class="badge active">Next up</span></div>
         <p class="phgoal">Point the rail at Claude. Pay-per-message chat, streamed back, priced by tokens.</p>
         <ul class="items">
           <li>New <span class="mono">/v1/chat</span> endpoint gating the Claude Messages API <span class="tag">Anthropic</span></li>
-          <li>Token-accurate pricing - cost scales with input + output tokens, quoted in the 402</li>
+          <li>Token-accurate pricing: cost scales with input and output tokens, quoted in the 402</li>
           <li>Streaming responses (SSE) with pre-authorization, settled on completion</li>
-          <li>"Chat with Claude, pay per message" web UI - the demo becomes the product</li>
-          <li>Model choice: Opus / Sonnet / Haiku, each with its own per-token price</li>
+          <li>"Chat with Claude, pay per message" web UI, where the demo becomes the product</li>
+          <li>Model choice: Opus, Sonnet, Haiku, each with its own per-token price</li>
         </ul>
       </div>
 
-      <div class="phase next">
+      <div class="phase next reveal">
         <div class="phhead"><span class="phnum">03</span><h3>Developer platform</h3><span class="badge next">Planned</span></div>
         <p class="phgoal">Let anyone build on the rail: keys, balances, metering, a drop-in SDK.</p>
         <ul class="items">
           <li>API keys tied to on-chain funded balances</li>
-          <li>Real-time usage metering - spend, remaining balance, per-call history</li>
-          <li>Per-key spend caps & rate limits set by the developer</li>
-          <li>Drop-in fetch wrapper SDK - any app pays automatically on 402</li>
+          <li>Real-time usage metering: spend, remaining balance, per-call history</li>
+          <li>Per-key spend caps and rate limits set by the developer</li>
+          <li>Drop-in fetch wrapper SDK, so any app pays automatically on 402</li>
           <li>Provider-agnostic gateway: many APIs behind one rail and one balance</li>
         </ul>
       </div>
 
-      <div class="phase vision">
-        <div class="phhead"><span class="phnum">04</span><h3>Hard guarantees & scale</h3><span class="badge vision">Vision</span></div>
+      <div class="phase vision reveal">
+        <div class="phhead"><span class="phnum">04</span><h3>Hard guarantees and scale</h3><span class="badge vision">Vision</span></div>
         <p class="phgoal">Make the spend cap a contract-enforced guarantee, then go wide.</p>
         <ul class="items">
-          <li>Odra budget-escrow contract - cumulative ceiling & per-merchant sub-limits the agent physically cannot exceed</li>
+          <li>Odra budget-escrow contract: cumulative ceiling and per-merchant sub-limits the agent physically cannot exceed</li>
           <li>Mainnet launch</li>
-          <li>Fiat on-ramp - top up a balance with a card, for users who never touch crypto</li>
-          <li>Multi-provider marketplace - Claude alongside other premium APIs, one rail</li>
-          <li>Agent-to-agent payments - agents settling each other's Tabs autonomously</li>
+          <li>Fiat on-ramp: top up a balance with a card, for users who never touch crypto</li>
+          <li>Multi-provider marketplace: Claude alongside other premium APIs, one rail</li>
+          <li>Agent-to-agent payments: agents settling each other's Tabs autonomously</li>
         </ul>
       </div>
 
     </div>
-  </section>
+  </div>
+</section>
 
-  <section>
-    <p class="eyebrow">Proof it's real</p>
-    <h2>Live on Casper testnet, today</h2>
-    <p class="lede">This isn't a mockup. The rail settles real payments on-chain right now - you can run the demo and click through to the block explorer.</p>
-    <div class="proof">
+<section class="lightsec">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow">Proof it's real</p>
+      <h2>Live on Casper testnet, <em>today</em>.</h2>
+      <p class="lede">This isn't a mockup. The rail settles real payments on-chain right now, and you can run
+        the demo and click through to the block explorer.</p>
+    </div>
+    <div class="proof reveal">
       <h3>What works today</h3>
-      <p>An agent pays in our CEP-18 token, the facilitator settles it on Casper testnet, and the paid API responds - every call a final on-chain settlement.</p>
+      <p>An agent pays in our CEP-18 token, the facilitator settles it on Casper testnet, and the paid API responds. Every call is a final on-chain settlement.</p>
       <div class="kv">
         <div><span class="lbl">Live app</span> <a href="https://tab402.fly.dev/">tab402.fly.dev</a></div>
         <div><span class="lbl">Try the demo</span> <a href="https://tab402.fly.dev/demo">tab402.fly.dev/demo</a></div>
@@ -224,12 +325,12 @@
         <div><span class="lbl">Source</span> <a href="https://github.com/Eienel/tab402">github.com/Eienel/tab402</a></div>
       </div>
     </div>
-    <div class="cta" style="margin-top:22px">
-      <a class="btn" href="https://tab402.fly.dev/demo">Run the live demo</a>
-      <a class="btn ghost" href="https://github.com/Eienel/tab402">Read the code</a>
+    <div class="cta reveal">
+      <a class="btn primary" href="https://tab402.fly.dev/demo">Run the live demo</a>
+      <a class="btn" href="https://github.com/Eienel/tab402">Read the code</a>
     </div>
-  </section>
-</div>
+  </div>
+</section>
 
 <footer>
   <div class="wrap foot">
@@ -242,5 +343,34 @@
     </div>
   </div>
 </footer>
+
+<script>
+  // nav: wide across the top -> floating pill on scroll (matches the app)
+  (function(){ const n=document.getElementById('nav'); if(!n) return;
+    const s=()=>n.classList.toggle('shrunk', window.scrollY>30); s();
+    window.addEventListener('scroll', s, {passive:true}); })();
+
+  // spring-in reveal
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }), {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // the timeline spine draws itself as the phases scroll past
+  (function(){
+    const tl = document.querySelector('.timeline'); if(!tl) return;
+    let ticking = false;
+    const draw = () => {
+      const r = tl.getBoundingClientRect();
+      const p = (window.innerHeight * 0.75 - r.top) / r.height;
+      tl.style.setProperty('--draw', Math.min(Math.max(p, 0), 1).toFixed(3));
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => {
+      if(!ticking){ requestAnimationFrame(draw); ticking = true; }
+    }, {passive:true});
+    draw();
+  })();
+</script>
 </body>
 </html>
